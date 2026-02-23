@@ -1,0 +1,122 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String         @id @default(uuid())
+  email          String         @unique
+  password       String
+  firstName      String
+  lastName       String
+  role           Role           @default(USER)
+  organizationId String?
+  organization   Organization?  @relation(fields: [organizationId], references: [id])
+  documents      Document[]
+  transactions   Transaction[]
+  auditTrails    AuditTrail[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model Organization {
+  id           String         @id @default(uuid())
+  name         String
+  users        User[]
+  documents    Document[]
+  transactions Transaction[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+model Document {
+  id             String       @id @default(uuid())
+  fileName       String
+  fileUrl        String
+  fileType       String
+  status         DocStatus    @default(PENDING)
+  extractedData  Json?
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+enum DocStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model Transaction {
+  id             String       @id @default(uuid())
+  amount         Float
+  currency       String       @default("USD")
+  type           TxType
+  category       String
+  date           DateTime     @default(now())
+  description    String?
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+enum TxType {
+  INCOME
+  EXPENSE
+}
+
+model FinancialRecord {
+  id             String       @id @default(uuid())
+  organizationId String
+  month          Int
+  year           Int
+  totalIncome    Float        @default(0)
+  totalExpense   Float        @default(0)
+  netProfit      Float        @default(0)
+  assets         Float        @default(0)
+  liabilities    Float        @default(0)
+  equity         Float        @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([organizationId, month, year])
+}
+
+model Alert {
+  id        String       @id @default(uuid())
+  type      String       // e.g., "LOW_BALANCE", "ANOMALY"
+  message   String
+  isRead    Boolean      @default(false)
+  userId    String
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model AuditTrail {
+  id        String       @id @default(uuid())
+  action    String
+  entity    String
+  entityId  String
+  userId    String
+  user      User         @relation(fields: [userId], references: [id])
+  details   Json?
+  createdAt DateTime     @default(now())
+}

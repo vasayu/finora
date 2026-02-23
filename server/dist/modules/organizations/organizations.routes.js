@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const organizations_controller_1 = require("./organizations.controller");
+const auth_middleware_1 = require("../../middleware/auth.middleware");
+const router = (0, express_1.Router)();
+const orgController = new organizations_controller_1.OrganizationsController();
+router.use(auth_middleware_1.protect);
+router.get('/:id', orgController.getOrganization);
+router.use((0, auth_middleware_1.restrictTo)('SUPER_ADMIN'));
+router.post('/', orgController.createOrganization);
+router.get('/', orgController.getAllOrganizations);
+exports.default = router;
