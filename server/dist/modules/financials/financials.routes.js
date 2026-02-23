@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const financials_controller_1 = require("./financials.controller");
+const auth_middleware_1 = require("../../middleware/auth.middleware");
+const router = (0, express_1.Router)();
+const finController = new financials_controller_1.FinancialsController();
+router.use(auth_middleware_1.protect);
+router.get('/pnl', finController.getPnL);
+router.get('/balance-sheet', finController.getBalanceSheet);
+exports.default = router;
