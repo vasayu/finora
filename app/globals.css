@@ -87,3 +87,37 @@ body {
   transform: translateZ(0);
   will-change: transform, opacity;
 }
+
+/* === 3D Cube & Orbital Animations === */
+@keyframes cubeRotate {
+  0%   { transform: rotateX(-20deg) rotateY(0deg); }
+  100% { transform: rotateX(-20deg) rotateY(360deg); }
+}
+
+@keyframes cubeFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-18px); }
+}
+
+@keyframes orbitSpin {
+  from { transform: rotateX(70deg) rotateZ(0deg); }
+  to   { transform: rotateX(70deg) rotateZ(360deg); }
+}
+
+@keyframes orbitSpinReverse {
+  from { transform: rotateX(60deg) rotateZ(0deg); }
+  to   { transform: rotateX(60deg) rotateZ(-360deg); }
+}
+
+@keyframes nodePulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%      { opacity: 1;   transform: scale(1.6); }
+}
+
+@keyframes dataParticle {
+  0%   { transform: translateY(0) scale(1);   opacity: 0; }
+  20%  { opacity: 0.8; }
+  50%  { transform: translateY(-30px) scale(1.3); opacity: 0.5; }
+  80%  { opacity: 0.8; }
+  100% { transform: translateY(0) scale(1);   opacity: 0; }
+}

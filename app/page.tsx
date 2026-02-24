@@ -16,7 +16,7 @@ export default function Home() {
       <ProductShowcase />
       <Features />
       <CTA />
-      <Footer />
+      {/* <Footer /> */}
     </main>
   );
 }

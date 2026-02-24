@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 24, "column": 0}, "map": {"version":3,"sources":["file:///C:/WebD/Finora/finora/frontend/finora/Components/About/Navbar.tsx"],"sourcesContent":["import React from 'react'\r\n\r\nconst Navbar = () => {\r\n  return (\r\n    <div className='w-[98%] sm:w-[90%] relative h-[60px] xl:max-w-[1400px] bg-[#47474740] backdrop-blur-[6px] border border-[#FFFFFF0D] rounded-xl mx-auto flex justify-center items-center m-2 '>\r\nNavbar\r\n    </div>\r\n  )\r\n}\r\n\r\nexport default Navbar"],"names":[],"mappings":";;;;;;AAEA,MAAM,SAAS;IACb,qBACE,oQAAC;QAAI,WAAU;kBAA+K;;;;;;AAIlM;uCAEe"}},
+    {"offset": {"line": 45, "column": 0}, "map": {"version":3,"sources":["file:///C:/WebD/Finora/finora/frontend/finora/app/page.tsx"],"sourcesContent":["\nimport About from '@/Pages/About'\nimport Navbar from '@/Components/About/Navbar'\nimport React from 'react' \n\nconst page = () => {\n  return (\n    <div>\n      <Navbar/>\n      <About/>\n    </div>\n  )\n}\n\nexport default page"],"names":[],"mappings":";;;;;AACA;AACA;;;;AAGA,MAAM,OAAO;IACX,qBACE,oQAAC;;0BACC,oQAAC,+JAAM;;;;;0BACP,oQAAC,gJAAK;;;;;;;;;;;AAGZ;uCAEe"}}]
+}

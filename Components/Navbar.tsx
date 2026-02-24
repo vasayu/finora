@@ -59,13 +59,20 @@ const Navbar = () => {
 
         {/* Desktop Links */}
         <div className="hidden md:flex items-center gap-8">
-          {["Platform", "Solutions", "Resources", "Pricing"].map((item) => (
-            <Magnetic key={item} strength={15}>
+          {[
+            { label: "Platform", href: "#" },
+            { label: "Solutions", href: "#" },
+            { label: "Resources", href: "#" },
+            { label: "Pricing", href: "#" },
+            { label: "Contact", href: "/contact" },
+            { label: "About", href: "/about" },
+          ].map((item) => (
+            <Magnetic key={item.label} strength={15}>
               <Link
-                href="#"
+                href={item.href}
                 className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-primary after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-right hover:after:origin-left"
               >
-                {item}
+                {item.label}
               </Link>
             </Magnetic>
           ))}
@@ -109,14 +116,21 @@ const Navbar = () => {
       {isMobileMenuOpen && (
         <div className="absolute top-[110%] left-0 w-full px-4 md:hidden">
           <div className="bg-background border border-border rounded-2xl shadow-2xl p-6 flex flex-col gap-4">
-            {["Platform", "Solutions", "Resources", "Pricing"].map((item) => (
+            {[
+              { label: "Platform", href: "#" },
+              { label: "Solutions", href: "#" },
+              { label: "Resources", href: "#" },
+              { label: "Pricing", href: "#" },
+              { label: "Contact", href: "/contact" },
+              { label: "About", href: "/about" },
+            ].map((item) => (
               <Link
-                key={item}
-                href="#"
+                key={item.label}
+                href={item.href}
                 className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors border-b border-border pb-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                {item}
+                {item.label}
               </Link>
             ))}
             <div className="flex flex-col gap-3 mt-4">

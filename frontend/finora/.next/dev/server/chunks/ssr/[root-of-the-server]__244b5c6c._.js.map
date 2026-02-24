@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 24, "column": 0}, "map": {"version":3,"sources":["file:///C:/WebD/Finora/finora/frontend/finora/app/page.tsx"],"sourcesContent":["\nimport About from '@/Pages/About'\nimport Navbar from '@/Components/Navbar'\nimport React from 'react' \n\nconst page = () => {\n  return (\n    <div>\n      <Navbar/>\n      <About/>\n    </div>\n  )\n}\n\nexport default page"],"names":[],"mappings":";;;;;AACA;;;;;;;;;AAIA,MAAM,OAAO;IACX,qBACE,oQAAC;;0BACC,oQAAC;;;;;0BACD,oQAAC,gJAAK;;;;;;;;;;;AAGZ;uCAEe"}}]
+}

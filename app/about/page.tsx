@@ -1,19 +1,19 @@
-import AboutFooter from '@/Components/About/AboutFooter'
+import About from '@/Components/About/About'
+import Footer from '@/Components/About/Footer'
 import Heading from '@/Components/About/Heading'
-import Para from '@/Components/About/Para'
 import Vision from '@/Components/About/Vision'
 import React from 'react'
 
 
-const About = () => {
+const AboutPage = () => {
   return (
-    <section>
-      <Heading/>
-      <Para/>
-      <Vision/>
-      <AboutFooter/>
+    <section className=''>
+      <Heading />
+      <About />
+      <Vision />
+      {/* <Footer /> */}
     </section>
   )
 }
 
-export default About
+export default AboutPage

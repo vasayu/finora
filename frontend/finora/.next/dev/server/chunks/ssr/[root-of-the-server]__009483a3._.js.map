@@ -1,0 +1,8 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 18, "column": 0}, "map": {"version":3,"sources":["file:///C:/WebD/Finora/finora/frontend/finora/Components/Contact/Connect.tsx"],"sourcesContent":["import React from 'react'\r\n\r\nconst Connect = () => {\r\n  return (\r\n    <div>Connect</div>\r\n  )\r\n}\r\n\r\nexport default Connect"],"names":[],"mappings":";;;;;;AAEA,MAAM,UAAU;IACd,qBACE,oQAAC;kBAAI;;;;;;AAET;uCAEe"}},
+    {"offset": {"line": 38, "column": 0}, "map": {"version":3,"sources":["file:///C:/WebD/Finora/finora/frontend/finora/Components/Contact/ContactFooter.tsx"],"sourcesContent":["import React from 'react'\r\n\r\nconst ContactFooter = () => {\r\n  return (\r\n    <div>ContactFooter</div>\r\n  )\r\n}\r\n\r\nexport default ContactFooter"],"names":[],"mappings":";;;;;;AAEA,MAAM,gBAAgB;IACpB,qBACE,oQAAC;kBAAI;;;;;;AAET;uCAEe"}},
+    {"offset": {"line": 58, "column": 0}, "map": {"version":3,"sources":["file:///C:/WebD/Finora/finora/frontend/finora/app/contact/page.tsx"],"sourcesContent":["import Connect from '@/Components/Contact/Connect'\r\nimport ContactFooter from '@/Components/Contact/ContactFooter'\r\nimport React from 'react'\r\n\r\nconst page = () => {\r\n  return (\r\n    <section>\r\n        <Connect/>\r\n        <ContactFooter/>\r\n    </section>\r\n  )\r\n}\r\n\r\nexport default page"],"names":[],"mappings":";;;;;AAAA;AACA;;;;AAGA,MAAM,OAAO;IACX,qBACE,oQAAC;;0BACG,oQAAC,kKAAO;;;;;0BACR,oQAAC,wKAAa;;;;;;;;;;;AAGtB;uCAEe"}}]
+}
