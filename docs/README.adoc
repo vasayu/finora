@@ -1,0 +1,450 @@
+= Finora Enterprise Financial Operating System - Backend
+:toc: left
+:toclevels: 4
+:sectnums:
+:sectnumlevels: 4
+:icons: font
+:source-highlighter: rouge
+:experimental:
+
+== Project Overview
+
+=== What is Finora?
+Finora is an Enterprise-Grade Financial Operating System designed to handle complex organizational financial workflows, document processing, transaction management, and automated bookkeeping. It acts as the central nervous system for modern financial operations, offering a scalable, reliable, and secure environment for managing sensitive financial data.
+
+=== Backend Responsibilities
+The Finora backend is the core engine powering the entire ecosystem. Its primary responsibilities include:
+
+*   **Secure Authentication & Authorization**: Providing robust access control via Role-Based Access Control (RBAC) and JWTs.
+*   **Asynchronous Processing**: Offloading heavy tasks like document parsing and alerting to background workers using RabbitMQ.
+*   **High-Performance Caching**: Serving real-time dashboard analytics instantly using Redis.
+*   **Data Persistence & Integrity**: Guaranteeing ACID compliance for financial ledgers via PostgreSQL and Prisma ORM.
+*   **Remote File Management**: Securely uploading, processing, and retrieving financial documents via Cloudinary, ensuring zero local file bloat.
+
+=== Architectural Philosophy
+The backend is built strictly on a **Service-Oriented Modular Architecture**. Each domain (e.g., Users, Transactions, Documents) is encapsulated in its own module containing its routes, controllers, services, and repositories. This separation of concerns guarantees high maintainability, easy horizontal scaling, and testability.
+
+---
+
+== Architecture Overview
+
+=== Modular Architecture
+The application is logically divided by business domains rather than technical layers. Each module operates semi-independently:
+*   `Routes`: Defines the API HTTP endpoints and attaches middleware.
+*   `Controller`: Validates requests, extracts parameters, and formats HTTP responses.
+*   `Service`: Contains the core business logic.
+*   `Repository`: Handles direct database interactions and abstracts the ORM layer.
+
+=== Queue System (RabbitMQ)
+To prevent API blocking operations during heavy tasks (like parsing large PDFs or scanning for fraud alerts), the backend utilizes RabbitMQ to publish jobs to queues (`document_processing`, `alert_notifications`). Independent worker processes consume these queues asynchronously.
+
+=== Cloudinary Storage
+Zero files are stored on the application servers. All documents (receipts, contracts, invoices) are streamed via memory buffers directly to Cloudinary. Cloudinary provides secure URLs that are then stored in PostgreSQL.
+
+=== Redis Caching
+Complex aggregations, such as Dashboard analytics and P&L summaries, are aggressively cached in Redis. This reduces database load by >90% during peak access times and provides sub-10ms response times for aggregated views.
+
+=== Architecture Diagrams
+
+[plantuml, architecture, png]
+....
+@startuml
+skinparam componentStyle uml2
+
+package "Finora API" {
+  [Express HTTP Server] as API
+  [Auth & Middleware] as Middleware
+}
+
+package "Message Queue" {
+  [RabbitMQ Exchange] as RabbitMQ
+}
+
+package "Background Workers" {
+  [Document Worker] as DocWorker
+  [Alert Worker] as AlertWorker
+}
+
+database "PostgreSQL\n(Prisma)" as DB
+database "Redis\n(Cache)" as Redis
+cloud "Cloudinary\n(Storage)" as Cloudinary
+
+API --> Middleware: Validates
+Middleware --> API
+
+API -> DB: Sync CRUD
+API -> Redis: Dashboard Aggregations (Read/Write)
+API -> Cloudinary: Stream Uploads
+API -> RabbitMQ: Publish Jobs (Async)
+
+DocWorker <- RabbitMQ: Consume Jobs
+AlertWorker <- RabbitMQ: Consume Jobs
+
+DocWorker --> DB: Update Status/Extract Data
+AlertWorker --> DB: Save Alerts
+@enduml
+....
+
+---
+
+== Technology Stack
+
+[cols="1,2,3", options="header"]
+|===
+| Technology | Role | Justification
+
+| **Node.js & Express**
+| Runtime & API Framework
+| Extremely fast I/O, massive ecosystem, standard for modern APIs.
+
+| **TypeScript**
+| Language
+| Provides compile-time safety, interfaces, and excellent developer experience.
+
+| **PostgreSQL**
+| Primary Database
+| Enterprise-grade, ACID-compliant relational DB perfect for financial records.
+
+| **Prisma**
+| ORM Layer
+| Type-safe database client prevents SQL injection and ensures schema sync.
+
+| **RabbitMQ**
+| Message Broker
+| Highly reliable message queuing protocol for background workers.
+
+| **Redis**
+| In-Memory Cache
+| Sub-millisecond data retrieval for heavy financial aggregations.
+
+| **Cloudinary**
+| Object Storage
+| Out-of-the-box secure cloud storage and delivery optimizations.
+
+| **Zod**
+| Schema Validation
+| TypeScript-first schema declaration and runtime validation.
+|===
+
+---
+
+== Project Folder Structure
+
+[source,text]
+----
+finora/backend/
+├── prisma/
+│   └── schema.prisma         # Database models and associations
+├── src/
+│   ├── config/               # Infrastructure configurations
+│   │   ├── cloudinary.ts
+│   │   ├── database.ts
+│   │   ├── env.ts            # Environment validation (Zod)
+│   │   ├── rabbitmq.ts
+│   │   └── redis.ts
+│   ├── middleware/           # Express middlewares
+│   │   ├── auth.middleware.ts
+│   │   └── error.middleware.ts
+│   ├── modules/              # Business Domain Modules
+│   │   ├── alerts/
+│   │   ├── audit/
+│   │   ├── auth/
+│   │   ├── dashboard/
+│   │   ├── documents/
+│   │   ├── financials/
+│   │   ├── organizations/
+│   │   └── transactions/
+│   ├── utils/                # Shared utilities
+│   │   ├── catchAsync.ts
+│   │   ├── jwt.ts
+│   │   ├── logger.ts         # Winston logger configuration
+│   │   └── upload.ts         # Multer configuration
+│   ├── workers/              # Background Task Handlers
+│   │   ├── alert.worker.ts
+│   │   ├── document.worker.ts
+│   │   └── report.worker.ts
+│   ├── app.ts                # Express application setup
+│   └── server.ts             # API Entry Point
+├── .env.example              # Environment variables template
+├── docker-compose.yml        # Infrastructure definitions
+├── ecosystem.config.js       # PM2 Production Process Manager
+├── package.json              # Dependencies and scripts
+└── tsconfig.json             # TypeScript compiler configuration
+----
+
+---
+
+== Installation Guide
+
+=== Prerequisites
+Ensure the following are installed on your machine:
+*   **Node.js**: `v18.x` or `v20.x`
+*   **Docker Desktop**: For running the infrastructure stack.
+
+=== Infrastructure Setup (PostgreSQL, RabbitMQ, Redis)
+The easiest way to spin up the required infrastructure is via the provided `docker-compose.yml` file.
+
+[source,bash]
+----
+# Boot up the infra stack in the background
+docker-compose up -d
+----
+
+=== Dependency Installation
+Install Node.js packages:
+
+[source,bash]
+----
+npm install
+----
+
+---
+
+== Environment Variables
+
+Create a `.env` file in the root directory by copying the `.env.example`.
+
+[source,env]
+----
+# Application
+NODE_ENV=development
+PORT=5000
+
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/finora?schema=public
+
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# RabbitMQ
+RABBITMQ_URL=amqp://localhost:5672
+
+# JWT Authentication
+JWT_SECRET=your_super_secret_jwt_key
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_SECRET=your_super_secret_refresh_key
+JWT_REFRESH_EXPIRES_IN=7d
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+----
+
+| Variable | Purpose |
+|----------|---------|
+| `DATABASE_URL` | Connects Prisma to PostgreSQL. |
+| `REDIS_URL` | Caches dashboard data securely. |
+| `JWT_SECRET` | Signs the Auth Access Tokens. |
+| `CLOUDINARY_*` | Connects to your Cloudinary storage bucket. |
+
+---
+
+== Database Setup
+
+Prisma manages the database schema. To initialize your database with the defined schema, run:
+
+[source,bash]
+----
+# Generates the TypeScript client based on your schema
+npm run prisma:generate
+
+# Pushes the schema to the database (in Dev mode)
+npm run prisma:push
+
+# For production migrations, use:
+# npx prisma migrate deploy
+----
+
+---
+
+== Running the Backend
+
+=== Development Mode
+To run the main API server in development mode with Hot Reloading:
+
+[source,bash]
+----
+npm run dev
+----
+
+=== Background Workers
+You must also run the background workers to process documents and alerts. Open separate terminal instances:
+
+[source,bash]
+----
+# Terminal 2
+npm run worker:document
+
+# Terminal 3
+npm run worker:alert
+----
+
+=== Production Mode
+In production, you generate the JavaScript build and run it using PM2.
+
+[source,bash]
+----
+npm run build
+pm2 start ecosystem.config.js --env production
+----
+
+---
+
+== RabbitMQ Queue System
+
+=== Queue Architecture
+Finora employs RabbitMQ for fault-tolerant asynchronous execution. The system guarantees exact-once delivery of crucial financial jobs.
+
+=== Job Flow Example: Document Processing
+1.  **Publish**: When a user uploads a document, the API saves the Cloudinary URL to PostgreSQL and immediately publishes a `documentId` payload to the `document_processing` queue.
+2.  **Consume**: The `document.worker.ts` constantly listens to this queue.
+3.  **Process**: The worker picks up the job, changes the document status to `PROCESSING`, performs heavy extraction tasks, updates the DB with JSON data, marks it `COMPLETED`, and finally sends an `ack` (acknowledgment) to RabbitMQ.
+
+---
+
+== Cloudinary Storage System
+
+We utilize a streaming architecture for file storage to ensure the Express APIs never experience memory bloat from file storage.
+
+1.  **Buffer**: `multer` intercepts the multi-part form data and stores the file in temporary RAM buffer.
+2.  **Stream**: The buffer is piped directly into Cloudinary using `streamifier` and `cloudinary.uploader.upload_stream`.
+3.  **Record**: Only the secure `HTTPS` Cloudinary URL is mapped into the PostgreSQL database. No `.pdf` or `.xlsx` files ever touch the local container filesystem.
+
+---
+
+== Authentication System
+
+Finora implements rigid authentication protocols based on **JSON Web Tokens (JWT)**.
+
+*   **Access Tokens**: Short-lived (e.g., 15 minutes) for high security. Passed in the `Authorization: Bearer <token>` header.
+*   **Refresh Tokens**: Long-lived (e.g., 7 days) used strictly to request new Access Tokens without re-authenticating the user password.
+*   **Role-Based Access (RBAC)**: Defined inside Prisma (`USER`, `ADMIN`, `SUPER_ADMIN`). Middlewares (`restrictTo`) guard sensitive routes against unauthorized access.
+
+---
+
+== API Reference
+
+_Note: All authenticated endpoints require the `Authorization: Bearer <token>` header._
+
+=== POST `/api/v1/auth/register`
+Creates a new user account.
+
+**Request:**
+[source,json]
+----
+{
+  "email": "user@enterprise.com",
+  "password": "SecurePassword123!",
+  "firstName": "John",
+  "lastName": "Doe"
+}
+----
+
+=== POST `/api/v1/auth/login`
+Authenticates and returns JWT pairs.
+
+=== POST `/api/v1/documents/upload`
+Uploads a new document securely to Cloudinary. Must be a `multipart/form-data` request containing the `file`.
+
+=== GET `/api/v1/dashboard/summary?organizationId={id}`
+Returns aggregated financial data. Backed by Redis.
+
+**Response:**
+[source,json]
+----
+{
+  "status": "success",
+  "data": {
+    "summary": {
+      "transactionsCount": 1420,
+      "documentStatus": { ... },
+      "recentAlerts": [ ... ]
+    }
+  }
+}
+----
+
+---
+
+== Worker System
+
+Worker processes are standalone Node.js instances that consume RabbitMQ message payloads. 
+
+=== Worker Scalability
+In a production setting via PM2 (`ecosystem.config.js`), or Kubernetes Deployments, you can independently scale workers.
+If your queue backlog for `document_processing` gets too high, you can scale the worker instances entirely independently from the API Web servers:
+
+[source,bash]
+----
+pm2 scale finora-doc-worker 5
+----
+
+---
+
+== Caching System
+
+The Dashboard API aggregates millions of transactions to render analytics. This is a highly intensive DB calculation.
+
+We utilize **Redis** using the `Cache-Aside` pattern:
+1. API receives a request for `/dashboard/summary`.
+2. API checks Redis for key `dashboard:summary:orgId:userId`.
+3. If it exists (Cache Hit): Return directly (< 10ms).
+4. If it misses: Calculate against PostgreSQL (~300ms), store in Redis with an Expiry (TTL) of 300 seconds, and return to the user.
+
+---
+
+== Security Architecture
+
+*   **Zod Validation**: Input sanitization prevents NoSQL/SQL injections and guarantees object shape before it ever touches business logic.
+*   **Helmet**: Auto-configures strict HTTP headers (HSTS, No-Sniff, XSS protection).
+*   **Bcrypt**: Uses industry-standard iteration counts for password hashing. Real passwords are never accessible, even to DB administrators.
+
+---
+
+== Deployment Guide
+
+=== Server Setup
+A typical production environment utilizes a private VPC where the RDS (Postgres), ElastiCache (Redis), and Amazon MQ (RabbitMQ) are partitioned. 
+
+The application itself is served behind an NGINX reverse proxy. 
+
+=== PM2 Process Management
+PM2 ensures the application remains online, auto-restarting on failure.
+
+[source,bash]
+----
+# Run production start script defined in package.json
+pm2 start ecosystem.config.js --env production
+
+# Save process list to recreate on server boot
+pm2 save
+pm2 startup
+----
+
+---
+
+== Scaling Architecture
+
+*   **Horizontal Scaling**: The API is fully stateless. User sessions are JWT-based, not memory-based. Therefore, you can place an infinite amount of API containers behind an AWS ALB (Application Load Balancer).
+*   **Database Scaling**: Prisma supports connection pooling (`pgbouncer`). For read-heavy instances, leverage Read Replicas.
+
+---
+
+== Development Guidelines
+
+=== Adding a New Module
+Finora is built to be expanded safely without monolith-entanglement:
+1. Create a dir in `src/modules/new_feature`.
+2. Create `new_feature.routes.ts`, attach to `app.ts`.
+3. Create `new_feature.controller.ts` for handling requests & responses.
+4. Create `new_feature.service.ts` for actual business logic.
+5. Create `new_feature.repository.ts` for database interactions.
+
+=== Coding Standards
+*   Always strictly type interfaces and return objects.
+*   NEVER commit secrets. All configs must pass through `env.ts` validation.
+*   Throw generic `Error` objects formatted via the global `error.middleware.ts` pattern.
+
+---
+_Documentation generated for Finora Enterprise Backend._
