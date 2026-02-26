@@ -6,6 +6,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight, Sparkles } from "lucide-react";
 import Magnetic from "./Magnetic";
+import Link from "next/link";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -75,27 +76,29 @@ export default function CTA() {
 
         <div className="cta-line">
           <Magnetic strength={30}>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 20 }}
-              className="group relative flex items-center justify-center gap-4 px-10 sm:px-12 py-5 sm:py-6 bg-primary rounded-full text-white font-bold text-lg sm:text-xl overflow-hidden shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow"
-            >
-              <span className="relative z-10 flex items-center gap-3">
-                <Sparkles size={24} className="group-hover:animate-pulse" />
-                Initialize Instance
-              </span>
+            <Link href="/register">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                className="group relative flex items-center justify-center gap-4 px-10 sm:px-12 py-5 sm:py-6 bg-primary rounded-full text-white font-bold text-lg sm:text-xl overflow-hidden shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow cursor-pointer"
+              >
+                <span className="relative z-10 flex items-center gap-3">
+                  <Sparkles size={24} className="group-hover:animate-pulse" />
+                  Initialize Instance
+                </span>
 
-              {/* Swipe Physics Effect */}
-              <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out z-0" />
+                {/* Swipe Physics Effect */}
+                <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out z-0" />
 
-              <div className="relative z-10 w-10 h-10 rounded-full bg-white text-primary flex items-center justify-center shadow-sm ml-2 sm:ml-4">
-                <ArrowRight
-                  size={20}
-                  className="group-hover:translate-x-1 transition-transform"
-                />
-              </div>
-            </motion.button>
+                <div className="relative z-10 w-10 h-10 rounded-full bg-white text-primary flex items-center justify-center shadow-sm ml-2 sm:ml-4">
+                  <ArrowRight
+                    size={20}
+                    className="group-hover:translate-x-1 transition-transform"
+                  />
+                </div>
+              </motion.div>
+            </Link>
           </Magnetic>
         </div>
       </div>

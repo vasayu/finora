@@ -62,4 +62,45 @@ export class AuthService {
             ...tokens,
         };
     }
+
+    async getProfile(userId: string) {
+        const user = await this.repository.findUserById(userId);
+        if (!user) {
+            throw { statusCode: 404, message: 'User not found' };
+        }
+
+        return {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+            organizationId: user.organizationId,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+        };
+    }
+
+    async updateProfile(userId: string, data: { firstName?: string; lastName?: string; email?: string }) {
+        // Check if email is being changed and if it's already taken
+        if (data.email) {
+            const existingUser = await this.repository.findUserByEmail(data.email);
+            if (existingUser && existingUser.id !== userId) {
+                throw { statusCode: 400, message: 'Email already in use' };
+            }
+        }
+
+        const user = await this.repository.updateUser(userId, data);
+
+        return {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+            organizationId: user.organizationId,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+        };
+    }
 }

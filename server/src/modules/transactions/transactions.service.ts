@@ -1,6 +1,4 @@
 import { TransactionsRepository } from './transactions.repository';
-import { Prisma } from '@prisma/client';
-import { publishToQueue } from '../../config/rabbitmq';
 
 export class TransactionsService {
     private repository: TransactionsRepository;
@@ -20,15 +18,6 @@ export class TransactionsService {
             user: { connect: { id: userId } },
             ...(data.organizationId && { organization: { connect: { id: data.organizationId } } })
         });
-
-        // Fire alert checks asynchronously
-        if (data.type === 'EXPENSE' && data.amount > 10000) {
-            await publishToQueue('alert_notifications', {
-                type: 'LARGE_EXPENSE',
-                message: `A large expense of ${data.amount} ${data.currency} was recorded.`,
-                userId,
-            });
-        }
 
         return transaction;
     }

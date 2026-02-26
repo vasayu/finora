@@ -1,34 +1,14 @@
-import amqplib, { Connection, Channel } from 'amqplib';
-import { env } from './env';
-import logger from '../utils/logger';
-
-let connection: Connection;
-let channel: Channel;
+// RabbitMQ is currently disabled. This file is a placeholder for future RabbitMQ integration.
+// When re-enabling, install the `amqplib` package and add RABBITMQ_URL to the env schema.
 
 export const connectRabbitMQ = async () => {
-    try {
-        connection = await amqplib.connect(env.RABBITMQ_URL);
-        channel = await connection.createChannel();
-        logger.info('RabbitMQ connected successfully');
-
-        // Assert necessary queues
-        await channel.assertQueue('document_processing', { durable: true });
-        await channel.assertQueue('alert_notifications', { durable: true });
-
-    } catch (error) {
-        logger.error('Failed to connect to RabbitMQ', error);
-        process.exit(1);
-    }
+    console.log('⚠️  RabbitMQ is disabled — message queuing is not active');
 };
 
 export const getRabbitChannel = () => {
-    if (!channel) {
-        throw new Error('RabbitMQ channel not initialized');
-    }
-    return channel;
+    throw new Error('RabbitMQ is not configured');
 };
 
 export const publishToQueue = async (queue: string, data: any) => {
-    const ch = getRabbitChannel();
-    return ch.sendToQueue(queue, Buffer.from(JSON.stringify(data)), { persistent: true });
+    console.log(`⚠️  RabbitMQ disabled — message to "${queue}" was not published:`, JSON.stringify(data).slice(0, 100));
 };

@@ -2,22 +2,23 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Box, Menu, X } from "lucide-react";
+import { Box, Menu, X, LayoutDashboard, User } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Magnetic from "./Magnetic";
 import { ThemeToggle } from "./ThemeToggle";
+import { useAuth } from "./AuthProvider";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const Navbar = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Shrink and blur navbar on scroll down
     const ctx = gsap.context(() => {
       gsap.to(containerRef.current, {
         scrollTrigger: {
@@ -74,23 +75,49 @@ const Navbar = () => {
         {/* Auth & Theme (Desktop) */}
         <div className="hidden md:flex items-center gap-4">
           <ThemeToggle />
-          <Magnetic strength={15}>
-            <Link
-              href="#"
-              className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors px-2"
-            >
-              Log In
-            </Link>
-          </Magnetic>
-
-          <Magnetic strength={30}>
-            <Link
-              href="#"
-              className="relative overflow-hidden text-sm font-semibold bg-primary hover:bg-secondary text-white px-6 py-2.5 rounded-full transition-colors group shadow-lg shadow-primary/20 hover:shadow-primary/40"
-            >
-              <span className="relative z-10">Get Started</span>
-            </Link>
-          </Magnetic>
+          {user ? (
+            <>
+              <Magnetic strength={15}>
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-foreground/80 hover:text-primary transition-colors px-3 py-2 rounded-full bg-white/[0.04] border border-white/[0.08] hover:border-primary/30"
+                >
+                  <LayoutDashboard size={16} />
+                  Dashboard
+                </Link>
+              </Magnetic>
+              <Magnetic strength={15}>
+                <Link
+                  href="/profile"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+                >
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-orange-400 flex items-center justify-center text-white text-[10px] font-bold">
+                    {user.firstName?.[0]}
+                    {user.lastName?.[0]}
+                  </div>
+                </Link>
+              </Magnetic>
+            </>
+          ) : (
+            <>
+              <Magnetic strength={15}>
+                <Link
+                  href="/login"
+                  className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors px-2"
+                >
+                  Log In
+                </Link>
+              </Magnetic>
+              <Magnetic strength={30}>
+                <Link
+                  href="/register"
+                  className="relative overflow-hidden text-sm font-semibold bg-primary hover:bg-orange-600 text-white px-6 py-2.5 rounded-full transition-colors group shadow-lg shadow-primary/20 hover:shadow-primary/40"
+                >
+                  <span className="relative z-10">Get Started</span>
+                </Link>
+              </Magnetic>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -120,18 +147,43 @@ const Navbar = () => {
               </Link>
             ))}
             <div className="flex flex-col gap-3 mt-4">
-              <Link
-                href="#"
-                className="text-center text-lg font-medium text-foreground/80 hover:text-primary transition-colors w-full border border-border rounded-xl py-3"
-              >
-                Log In
-              </Link>
-              <Link
-                href="#"
-                className="text-center text-lg font-semibold bg-primary text-white rounded-xl py-3 shadow-lg shadow-primary/20"
-              >
-                Get Started
-              </Link>
+              {user ? (
+                <>
+                  <Link
+                    href="/dashboard"
+                    className="text-center text-lg font-semibold bg-primary text-white rounded-xl py-3 shadow-lg shadow-primary/20 inline-flex items-center justify-center gap-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <LayoutDashboard size={18} />
+                    Go to Dashboard
+                  </Link>
+                  <Link
+                    href="/profile"
+                    className="text-center text-lg font-medium text-foreground/80 hover:text-primary transition-colors w-full border border-border rounded-xl py-3 inline-flex items-center justify-center gap-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <User size={18} />
+                    Profile
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="text-center text-lg font-medium text-foreground/80 hover:text-primary transition-colors w-full border border-border rounded-xl py-3"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Log In
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="text-center text-lg font-semibold bg-primary text-white rounded-xl py-3 shadow-lg shadow-primary/20"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

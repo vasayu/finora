@@ -11,25 +11,21 @@ export class FinancialsController {
 
     getPnL = catchAsync(async (req: Request, res: Response) => {
         const { organizationId, startDate, endDate } = req.query;
-        if (!organizationId) {
-            throw { statusCode: 400, message: 'organizationId is required' };
-        }
-
         const pnl = await this.finService.getPnL(
-            organizationId as string,
-            startDate as string,
-            endDate as string
+            req.user.id,
+            organizationId as string | undefined,
+            startDate as string | undefined,
+            endDate as string | undefined
         );
-        res.status(200).json({ status: 'success', data: { pnl } });
+        res.status(200).json({ status: 'success', data: pnl });
     });
 
     getBalanceSheet = catchAsync(async (req: Request, res: Response) => {
         const { organizationId } = req.query;
-        if (!organizationId) {
-            throw { statusCode: 400, message: 'organizationId is required' };
-        }
-
-        const balanceSheet = await this.finService.getBalanceSheet(organizationId as string);
-        res.status(200).json({ status: 'success', data: { balanceSheet } });
+        const balanceSheet = await this.finService.getBalanceSheet(
+            req.user.id,
+            organizationId as string | undefined
+        );
+        res.status(200).json({ status: 'success', data: balanceSheet });
     });
 }
