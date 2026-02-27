@@ -657,28 +657,6 @@ railway up
 
 ---
 
-## 🤝 Contributing
-
-Contributions are welcome. Please open an issue first to discuss what you'd like to change.
-
-```bash
-# 1. Fork the repository
-# 2. Create your feature branch
-git checkout -b feature/amazing-feature
-
-# 3. Commit your changes
-git commit -m 'feat: add amazing feature'
-
-# 4. Push to the branch
-git push origin feature/amazing-feature
-
-# 5. Open a Pull Request
-```
-
-Follow the existing code style — TypeScript, Zod validation on environment variables, service-layer pattern for business logic, and Prisma for all database operations.
-
----
-
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
