@@ -46,7 +46,6 @@ AI-driven financial assistant · Anomaly alerts · Document intelligence · Real
 - [API Reference](#-api-reference)
 - [Deployment](#-deployment)
 - [Future Features](#-future-features)
-- [Contributing](#-contributing)
 
 ---
 
