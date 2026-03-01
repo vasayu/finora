@@ -41,6 +41,7 @@ export default function Hero() {
 
   return (
     <div
+      id="hero"
       ref={containerRef}
       className="relative w-full min-h-screen flex flex-col justify-center overflow-hidden bg-background transition-colors duration-500"
     >

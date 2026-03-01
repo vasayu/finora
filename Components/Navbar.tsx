@@ -63,7 +63,7 @@ const Navbar = () => {
           {["Platform", "Solutions", "Resources", "Pricing"].map((item) => (
             <Magnetic key={item} strength={15}>
               <Link
-                href="#"
+                href={item === "Pricing" ? "/pricing" : "#"}
                 className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-primary after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-right hover:after:origin-left"
               >
                 {item}
@@ -139,7 +139,7 @@ const Navbar = () => {
             {["Platform", "Solutions", "Resources", "Pricing"].map((item) => (
               <Link
                 key={item}
-                href="#"
+                href={item === "Pricing" ? "/pricing" : "#"}
                 className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors border-b border-border pb-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >

@@ -67,6 +67,7 @@ export default function ProblemSolution() {
 
   return (
     <section
+      id="problem-solution"
       ref={containerRef}
       className="relative w-full bg-background transition-colors duration-500 py-24 md:py-0 overflow-visible"
     >

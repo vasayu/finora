@@ -1,0 +1,40 @@
+{"level":"info","message":"\u001b[0mGET /api/v1/transactions \u001b[36m304\u001b[0m 201.901 ms - -\u001b[0m","timestamp":"2026-03-01T06:33:16.156Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/dashboard/summary \u001b[36m304\u001b[0m 340.694 ms - -\u001b[0m","timestamp":"2026-03-01T06:33:16.224Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/transactions \u001b[36m304\u001b[0m 26.700 ms - -\u001b[0m","timestamp":"2026-03-01T06:33:16.231Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/dashboard/summary \u001b[36m304\u001b[0m 37.952 ms - -\u001b[0m","timestamp":"2026-03-01T06:33:16.277Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/financials/pnl \u001b[36m304\u001b[0m 17.249 ms - -\u001b[0m","timestamp":"2026-03-01T06:33:33.000Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/financials/pnl \u001b[36m304\u001b[0m 16.094 ms - -\u001b[0m","timestamp":"2026-03-01T06:33:33.032Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/financials/balance-sheet \u001b[36m304\u001b[0m 7.830 ms - -\u001b[0m","timestamp":"2026-03-01T06:33:39.984Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/financials/balance-sheet \u001b[36m304\u001b[0m 8.391 ms - -\u001b[0m","timestamp":"2026-03-01T06:33:39.995Z"}
+{"level":"info","message":"\u001b[0mPOST /api/v1/ai/analyze \u001b[32m200\u001b[0m 13818.338 ms - 4997\u001b[0m","timestamp":"2026-03-01T06:34:02.162Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/transactions \u001b[36m304\u001b[0m 9.647 ms - -\u001b[0m","timestamp":"2026-03-01T06:34:17.958Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/dashboard/summary \u001b[36m304\u001b[0m 20.189 ms - -\u001b[0m","timestamp":"2026-03-01T06:34:17.964Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/transactions \u001b[36m304\u001b[0m 7.716 ms - -\u001b[0m","timestamp":"2026-03-01T06:34:17.971Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/dashboard/summary \u001b[36m304\u001b[0m 14.359 ms - -\u001b[0m","timestamp":"2026-03-01T06:34:17.982Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/transactions \u001b[36m304\u001b[0m 7.398 ms - -\u001b[0m","timestamp":"2026-03-01T06:35:22.538Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/transactions \u001b[36m304\u001b[0m 5.955 ms - -\u001b[0m","timestamp":"2026-03-01T06:35:22.547Z"}
+{"level":"info","message":"\u001b[0mPOST /api/v1/transactions \u001b[32m201\u001b[0m 28.820 ms - 355\u001b[0m","timestamp":"2026-03-01T06:35:34.099Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/transactions \u001b[32m200\u001b[0m 4.999 ms - 2547\u001b[0m","timestamp":"2026-03-01T06:35:34.109Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/documents \u001b[36m304\u001b[0m 12.013 ms - -\u001b[0m","timestamp":"2026-03-01T06:35:35.973Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/documents \u001b[36m304\u001b[0m 8.660 ms - -\u001b[0m","timestamp":"2026-03-01T06:35:35.984Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/alerts \u001b[36m304\u001b[0m 7.229 ms - -\u001b[0m","timestamp":"2026-03-01T06:35:40.563Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/alerts \u001b[36m304\u001b[0m 5.779 ms - -\u001b[0m","timestamp":"2026-03-01T06:35:40.571Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/financials/pnl \u001b[32m200\u001b[0m 5.942 ms - 163\u001b[0m","timestamp":"2026-03-01T06:35:46.265Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/financials/pnl \u001b[36m304\u001b[0m 5.417 ms - -\u001b[0m","timestamp":"2026-03-01T06:35:46.273Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/financials/balance-sheet \u001b[36m304\u001b[0m 7.824 ms - -\u001b[0m","timestamp":"2026-03-01T06:35:58.443Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/financials/balance-sheet \u001b[36m304\u001b[0m 6.501 ms - -\u001b[0m","timestamp":"2026-03-01T06:35:58.455Z"}
+{"level":"info","message":"\u001b[0mPOST /api/v1/ai/analyze \u001b[32m200\u001b[0m 13240.497 ms - 5082\u001b[0m","timestamp":"2026-03-01T06:36:15.373Z"}
+{"level":"error","message":"Not authorized, no token","statusCode":401,"timestamp":"2026-03-01T06:36:33.250Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/stocks/history?symbol=AAPL&timeframe=1D \u001b[33m401\u001b[0m 1.444 ms - 72\u001b[0m","timestamp":"2026-03-01T06:36:33.252Z"}
+{"level":"error","message":"Not authorized, no token","statusCode":401,"timestamp":"2026-03-01T06:36:33.253Z"}
+{"level":"info","message":"\u001b[0mPOST /api/v1/stocks/predict \u001b[33m401\u001b[0m 0.668 ms - 72\u001b[0m","timestamp":"2026-03-01T06:36:33.254Z"}
+{"level":"error","message":"Not authorized, no token","statusCode":401,"timestamp":"2026-03-01T06:36:33.255Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/financials/balance-sheet \u001b[33m401\u001b[0m 0.766 ms - 72\u001b[0m","timestamp":"2026-03-01T06:36:33.257Z"}
+{"level":"error","message":"Not authorized, no token","statusCode":401,"timestamp":"2026-03-01T06:36:33.269Z"}
+{"level":"info","message":"\u001b[0mPOST /api/v1/stocks/predict \u001b[33m401\u001b[0m 0.814 ms - 72\u001b[0m","timestamp":"2026-03-01T06:36:33.270Z"}
+{"level":"error","message":"Not authorized, no token","statusCode":401,"timestamp":"2026-03-01T06:36:33.271Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/stocks/history?symbol=AAPL&timeframe=1D \u001b[33m401\u001b[0m 0.683 ms - 72\u001b[0m","timestamp":"2026-03-01T06:36:33.272Z"}
+{"level":"error","message":"Not authorized, no token","statusCode":401,"timestamp":"2026-03-01T06:36:33.273Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/financials/balance-sheet \u001b[33m401\u001b[0m 0.840 ms - 72\u001b[0m","timestamp":"2026-03-01T06:36:33.274Z"}
+{"level":"info","message":"\u001b[0mPOST /api/v1/ai/chat \u001b[32m200\u001b[0m 1418.084 ms - 147\u001b[0m","timestamp":"2026-03-01T06:36:52.354Z"}
+{"level":"info","message":"\u001b[0mPOST /api/v1/ai/analyze \u001b[32m200\u001b[0m 11340.995 ms - 3867\u001b[0m","timestamp":"2026-03-01T06:37:07.179Z"}
