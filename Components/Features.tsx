@@ -82,6 +82,7 @@ export default function Features() {
 
   return (
     <section
+      id="features"
       ref={containerRef}
       className="relative w-full py-32 bg-background transition-colors duration-500 overflow-hidden px-6"
     >

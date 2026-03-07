@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/Components/ThemeProvider";
 import { AuthProvider } from "@/Components/AuthProvider";
+import ScrollMinimap from "@/Components/ScrollMinimap";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,7 +33,10 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <ScrollMinimap />
+            {children}
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
