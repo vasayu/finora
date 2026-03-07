@@ -3,11 +3,7 @@ import { verifyAccessToken } from '../utils/jwt';
 import { catchAsync } from '../utils/catchAsync';
 import { prisma } from '../config/database';
 
-export interface AuthRequest extends Request {
-    user?: any;
-}
-
-export const protect = catchAsync(async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const protect = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     let token;
 
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -37,7 +33,7 @@ export const protect = catchAsync(async (req: AuthRequest, res: Response, next: 
 });
 
 export const restrictTo = (...roles: string[]) => {
-    return (req: AuthRequest, res: Response, next: NextFunction) => {
+    return (req: Request, res: Response, next: NextFunction) => {
         if (!req.user || !roles.includes(req.user.role)) {
             return next({ statusCode: 403, message: 'You do not have permission to perform this action' });
         }

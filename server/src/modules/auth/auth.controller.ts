@@ -15,6 +15,12 @@ const loginSchema = z.object({
     password: z.string(),
 });
 
+const updateProfileSchema = z.object({
+    firstName: z.string().min(2).optional(),
+    lastName: z.string().min(2).optional(),
+    email: z.string().email().optional(),
+});
+
 export class AuthController {
     private authService: AuthService;
 
@@ -32,5 +38,16 @@ export class AuthController {
         const validatedData = loginSchema.parse(req.body);
         const result = await this.authService.login(validatedData.email, validatedData.password);
         res.status(200).json({ status: 'success', data: result });
+    });
+
+    getMe = catchAsync(async (req: Request, res: Response) => {
+        const user = await this.authService.getProfile(req.user.id);
+        res.status(200).json({ status: 'success', data: { user } });
+    });
+
+    updateProfile = catchAsync(async (req: Request, res: Response) => {
+        const validatedData = updateProfileSchema.parse(req.body);
+        const user = await this.authService.updateProfile(req.user.id, validatedData);
+        res.status(200).json({ status: 'success', data: { user } });
     });
 }

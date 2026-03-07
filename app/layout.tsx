@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/Components/Navbar";
-import SmoothScroll from "@/Components/SmoothScroll";
 import { ThemeProvider } from "@/Components/ThemeProvider";
 import Footer from "@/Components/Footer";
+import { AuthProvider } from "@/Components/AuthProvider";
+import SmoothScroll from "@/Components/SmoothScroll";
+import Navbar from "@/Components/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,7 +19,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Finora",
-  description: "Financial systems were never designed to work together.",
+  description:
+    "Financial Operating System — Real-time intelligence for modern finance.",
 };
 
 export default function RootLayout({
@@ -33,11 +35,13 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+<AuthProvider>
           <SmoothScroll>
             <Navbar />
             {children}
             <Footer/>
           </SmoothScroll>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

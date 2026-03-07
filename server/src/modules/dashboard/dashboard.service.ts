@@ -1,42 +1,41 @@
 import { prisma } from '../../config/database';
-import { redis } from '../../config/redis';
 
 export class DashboardService {
-    async getSummary(organizationId: string, userId: string) {
-        const cacheKey = `dashboard:summary:${organizationId}:${userId}`;
+    async getSummary(userId: string, organizationId?: string) {
+        // Build where clause — filter by org if provided, otherwise by user
+        const txWhere: any = organizationId ? { organizationId } : { userId };
 
-        // Check cache
-        const cachedData = await redis.get(cacheKey);
-        if (cachedData) {
-            return JSON.parse(cachedData);
+        const transactions = await prisma.transaction.findMany({ where: txWhere });
+
+        let totalRevenue = 0;
+        let totalExpenses = 0;
+
+        for (const tx of transactions) {
+            if (tx.type === 'INCOME') totalRevenue += tx.amount;
+            if (tx.type === 'EXPENSE') totalExpenses += tx.amount;
         }
 
-        // Aggregate real data if not in cache
-        const transactionsCount = await prisma.transaction.count({
-            where: { organizationId }
-        });
+        const profit = totalRevenue - totalExpenses;
+        const cashFlow = totalRevenue - totalExpenses;
 
-        const documents = await prisma.document.groupBy({
-            by: ['status'],
-            where: { organizationId },
-            _count: { id: true },
-        });
+        const alertCount = await prisma.alert.count({ where: { userId } });
+        const unreadAlertCount = await prisma.alert.count({ where: { userId, isRead: false } });
 
         const recentAlerts = await prisma.alert.findMany({
             where: { userId },
             take: 5,
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
         });
 
-        const summary = {
-            transactionsCount,
-            documentStatus: documents,
+        return {
+            totalRevenue,
+            totalExpenses,
+            profit,
+            cashFlow,
+            transactionsCount: transactions.length,
+            alertCount,
+            unreadAlertCount,
             recentAlerts,
         };
-
-        // Cache the result for 5 minutes (300 seconds)
-        await redis.setEx(cacheKey, 300, JSON.stringify(summary));
-
-        return summary;
     }
 }

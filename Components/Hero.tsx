@@ -6,6 +6,7 @@ import gsap from "gsap";
 import { ArrowRight, Activity, Cpu, Network } from "lucide-react";
 import HeroBackground from "./HeroBackground";
 import Magnetic from "./Magnetic";
+import Link from "next/link";
 
 export default function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -90,21 +91,23 @@ export default function Hero() {
           </motion.p>
 
           <Magnetic strength={10}>
-            <motion.button
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
-              className="group flex items-center gap-4 px-8 py-4 bg-background/80 hover:bg-background backdrop-blur-md border border-border shadow-lg shadow-black/5 hover:shadow-primary/20 rounded-2xl text-foreground font-semibold transition-all relative overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <span className="relative z-10 text-lg">Initialize Core</span>
-              <div className="relative z-10 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center group-hover:scale-110 transition-transform shadow-md">
-                <ArrowRight
-                  size={16}
-                  className="group-hover:translate-x-0.5 transition-transform"
-                />
-              </div>
-            </motion.button>
+            <Link href="/register">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
+                className="group flex items-center gap-4 px-8 py-4 bg-background/80 hover:bg-background backdrop-blur-md border border-border shadow-lg shadow-black/5 hover:shadow-primary/20 rounded-2xl text-foreground font-semibold transition-all relative overflow-hidden cursor-pointer"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <span className="relative z-10 text-lg">Initialize Core</span>
+                <div className="relative z-10 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center group-hover:scale-110 transition-transform shadow-md">
+                  <ArrowRight
+                    size={16}
+                    className="group-hover:translate-x-0.5 transition-transform"
+                  />
+                </div>
+              </motion.div>
+            </Link>
           </Magnetic>
         </div>
 
