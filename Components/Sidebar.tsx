@@ -16,19 +16,63 @@ import {
   TrendingUp,
   Scale,
   Activity,
+  Briefcase,
+  Calculator,
+  Crown,
+  Users,
+  PieChart,
+  Building2,
 } from "lucide-react";
 import { useAuth } from "@/Components/AuthProvider";
 
-const navItems = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Transactions", href: "/transactions", icon: ArrowLeftRight },
-  { label: "Documents", href: "/documents", icon: FileText },
-  { label: "Alerts", href: "/alerts", icon: ShieldAlert },
-  { label: "P&L Report", href: "/reports/pnl", icon: TrendingUp },
-  { label: "Balance Sheet", href: "/reports/balance-sheet", icon: Scale },
-  { label: "Trading Terminal", href: "/terminal", icon: Activity },
-  { label: "AI Assistant", href: "/ai", icon: Bot },
-  { label: "Profile", href: "/profile", icon: User },
+const ROLE_CONFIG: Record<
+  string,
+  { label: string; color: string; bg: string; icon: any }
+> = {
+  EMPLOYEE: {
+    label: "Employee",
+    color: "text-blue-400",
+    bg: "bg-blue-500/10",
+    icon: Briefcase,
+  },
+  ACCOUNTANT: {
+    label: "Accountant",
+    color: "text-emerald-400",
+    bg: "bg-emerald-500/10",
+    icon: Calculator,
+  },
+  CFO: {
+    label: "CFO",
+    color: "text-amber-400",
+    bg: "bg-amber-500/10",
+    icon: Crown,
+  },
+  MANAGER: {
+    label: "Manager",
+    color: "text-purple-400",
+    bg: "bg-purple-500/10",
+    icon: Users,
+  },
+  INVESTOR: {
+    label: "Investor",
+    color: "text-cyan-400",
+    bg: "bg-cyan-500/10",
+    icon: PieChart,
+  },
+};
+
+// Navigation items per role
+const ALL_NAV_ITEMS = [
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
+  { label: "Transactions", href: "/transactions", icon: ArrowLeftRight, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER"] },
+  { label: "Documents", href: "/documents", icon: FileText, roles: ["ACCOUNTANT", "CFO", "MANAGER", "EMPLOYEE"] },
+  { label: "Alerts", href: "/alerts", icon: ShieldAlert, roles: ["ACCOUNTANT", "CFO", "MANAGER"] },
+  { label: "P&L Report", href: "/reports/pnl", icon: TrendingUp, roles: ["ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
+  { label: "Balance Sheet", href: "/reports/balance-sheet", icon: Scale, roles: ["ACCOUNTANT", "CFO", "INVESTOR"] },
+  { label: "Trading Terminal", href: "/terminal", icon: Activity, roles: ["CFO", "INVESTOR"] },
+  { label: "AI Assistant", href: "/ai", icon: Bot, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
+  { label: "Organization", href: "/organization", icon: Building2, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
+  { label: "Profile", href: "/profile", icon: User, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
 ];
 
 export default function Sidebar() {
@@ -38,6 +82,16 @@ export default function Sidebar() {
   const initials = user
     ? `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`.toUpperCase()
     : "?";
+
+  const roleConfig = ROLE_CONFIG[user?.role || "EMPLOYEE"];
+  const RoleIcon = roleConfig?.icon || Briefcase;
+
+  const navItems = ALL_NAV_ITEMS.filter((item) => {
+    if (!item.roles.includes(user?.role || "EMPLOYEE")) return false;
+    // If user has no org, only show the Organization page
+    if (!user?.organizationId && item.href !== "/organization") return false;
+    return true;
+  });
 
   return (
     <aside className="fixed top-0 left-0 h-screen w-64 bg-[#0a0a0a] border-r border-white/[0.06] flex flex-col z-40">
@@ -62,11 +116,10 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                isActive
-                  ? "bg-primary/10 text-primary"
-                  : "text-foreground/50 hover:text-foreground hover:bg-white/[0.04]"
-              }`}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${isActive
+                ? "bg-primary/10 text-primary"
+                : "text-foreground/50 hover:text-foreground hover:bg-white/[0.04]"
+                }`}
             >
               <item.icon size={18} />
               {item.label}
@@ -88,6 +141,17 @@ export default function Sidebar() {
             <p className="text-xs text-foreground/40 truncate">{user?.email}</p>
           </div>
         </div>
+        {/* Role Badge */}
+        {roleConfig && (
+          <div
+            className={`flex items-center gap-2 px-3 py-2 mb-2 rounded-xl ${roleConfig.bg}`}
+          >
+            <RoleIcon size={14} className={roleConfig.color} />
+            <span className={`text-xs font-semibold ${roleConfig.color}`}>
+              {roleConfig.label}
+            </span>
+          </div>
+        )}
         <button
           onClick={() => {
             logout();

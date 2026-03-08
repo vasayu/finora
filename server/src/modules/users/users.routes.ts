@@ -10,7 +10,7 @@ router.use(protect);
 router.get('/me', usersController.getMe);
 
 // Admin only routes
-router.use(restrictTo('ADMIN', 'SUPER_ADMIN'));
+router.use(restrictTo('CFO', 'MANAGER'));
 router.get('/', usersController.getAllUsers);
 router.get('/:id', usersController.getUser);
 

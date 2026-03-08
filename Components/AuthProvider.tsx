@@ -7,8 +7,7 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-
-const API_URL = "http://localhost:5000/api/v1";
+import { api } from "@/lib/api";
 
 interface User {
   id: string;
@@ -62,32 +61,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchProfile = useCallback(async () => {
     if (!token) return;
     try {
-      const res = await fetch(`${API_URL}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data.data.user);
-        localStorage.setItem("finora_user", JSON.stringify(data.data.user));
-      }
+      const res = await api<{ status: string; data: { user: User } }>(
+        "/auth/me",
+        { token }
+      );
+      setUser(res.data.user);
+      localStorage.setItem("finora_user", JSON.stringify(res.data.user));
     } catch (err) {
       console.error("Failed to fetch profile", err);
     }
   }, [token]);
 
   const login = async (email: string, password: string) => {
-    const res = await fetch(`${API_URL}/auth/login`, {
+    const res = await api<{
+      status: string;
+      data: { user: User; accessToken: string };
+    }>("/auth/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: { email, password },
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || "Login failed");
 
-    setToken(data.data.accessToken);
-    setUser(data.data.user);
-    localStorage.setItem("finora_token", data.data.accessToken);
-    localStorage.setItem("finora_user", JSON.stringify(data.data.user));
+    setToken(res.data.accessToken);
+    setUser(res.data.user);
+    localStorage.setItem("finora_token", res.data.accessToken);
+    localStorage.setItem("finora_user", JSON.stringify(res.data.user));
   };
 
   const register = async (regData: {
@@ -95,19 +92,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     password: string;
     firstName: string;
     lastName: string;
+    role?: string;
   }) => {
-    const res = await fetch(`${API_URL}/auth/register`, {
+    const res = await api<{
+      status: string;
+      data: { user: User; accessToken: string };
+    }>("/auth/register", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(regData),
+      body: regData,
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || "Registration failed");
 
-    setToken(data.data.accessToken);
-    setUser(data.data.user);
-    localStorage.setItem("finora_token", data.data.accessToken);
-    localStorage.setItem("finora_user", JSON.stringify(data.data.user));
+    setToken(res.data.accessToken);
+    setUser(res.data.user);
+    localStorage.setItem("finora_token", res.data.accessToken);
+    localStorage.setItem("finora_user", JSON.stringify(res.data.user));
   };
 
   const logout = () => {
@@ -123,19 +121,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     email?: string;
   }) => {
     if (!token) throw new Error("Not authenticated");
-    const res = await fetch(`${API_URL}/auth/update-profile`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(profileData),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || "Update failed");
+    const res = await api<{ status: string; data: { user: User } }>(
+      "/auth/update-profile",
+      {
+        method: "PATCH",
+        token,
+        body: profileData,
+      }
+    );
 
-    setUser(data.data.user);
-    localStorage.setItem("finora_user", JSON.stringify(data.data.user));
+    setUser(res.data.user);
+    localStorage.setItem("finora_user", JSON.stringify(res.data.user));
   };
 
   return (
