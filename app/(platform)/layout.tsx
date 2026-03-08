@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/Components/AuthProvider";
 import Sidebar from "@/Components/Sidebar";
 
@@ -12,12 +12,20 @@ export default function PlatformLayout({
 }) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!isLoading && !user) {
       router.push("/login");
     }
   }, [user, isLoading, router]);
+
+  // Redirect to /organization if user has no org (except when already on that page)
+  useEffect(() => {
+    if (!isLoading && user && !user.organizationId && pathname !== "/organization") {
+      router.push("/organization");
+    }
+  }, [user, isLoading, router, pathname]);
 
   if (isLoading) {
     return (

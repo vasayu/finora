@@ -1,7 +1,15 @@
 import bcrypt from 'bcryptjs';
 import { AuthRepository } from './auth.repository';
 import { generateTokens } from '../../utils/jwt';
-import { Prisma } from '@prisma/client';
+import { Role } from '@prisma/client';
+
+interface RegisterInput {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+    role?: Role;
+}
 
 export class AuthService {
     private repository: AuthRepository;
@@ -10,7 +18,7 @@ export class AuthService {
         this.repository = new AuthRepository();
     }
 
-    async register(data: Prisma.UserCreateInput) {
+    async register(data: RegisterInput) {
         const existingUser = await this.repository.findUserByEmail(data.email);
         if (existingUser) {
             throw { statusCode: 400, message: 'Email already in use' };
@@ -19,10 +27,18 @@ export class AuthService {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(data.password, salt);
 
+        const role = data.role || 'EMPLOYEE';
+
         const user = await this.repository.createUser({
-            ...data,
+            email: data.email,
+            firstName: data.firstName,
+            lastName: data.lastName,
             password: hashedPassword,
+            role,
         });
+
+        // Create the role-specific profile
+        await this.repository.createRoleProfile(user.id, role);
 
         const tokens = generateTokens(user.id, user.role);
 
@@ -82,7 +98,6 @@ export class AuthService {
     }
 
     async updateProfile(userId: string, data: { firstName?: string; lastName?: string; email?: string }) {
-        // Check if email is being changed and if it's already taken
         if (data.email) {
             const existingUser = await this.repository.findUserByEmail(data.email);
             if (existingUser && existingUser.id !== userId) {

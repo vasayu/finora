@@ -23,7 +23,7 @@ export class DocumentsController {
     });
 
     getDocuments = catchAsync(async (req: Request, res: Response) => {
-        const userId = req.user.role === 'SUPER_ADMIN' ? undefined : req.user.id;
+        const userId = req.user.role === 'CFO' ? undefined : req.user.id;
         const documents = await this.docsService.getDocuments(userId);
         res.status(200).json({ status: 'success', data: { documents } });
     });
@@ -35,7 +35,7 @@ export class DocumentsController {
         }
 
         // Simple ownership check
-        if (document.userId !== req.user.id && req.user.role !== 'SUPER_ADMIN') {
+        if (document.userId !== req.user.id && req.user.role !== 'CFO') {
             throw { statusCode: 403, message: 'Not authorized to access this document' };
         }
 
