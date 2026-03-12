@@ -1,0 +1,12 @@
+{"level":"info","message":"\u001b[0mPOST /api/v1/rag/chat \u001b[32m200\u001b[0m 2213.202 ms - 305\u001b[0m","timestamp":"2026-03-12T17:30:13.254Z"}
+{"level":"info","message":"\u001b[0mPOST /api/v1/rag/chat \u001b[32m200\u001b[0m 1938.722 ms - 307\u001b[0m","timestamp":"2026-03-12T17:30:29.854Z"}
+{"level":"info","message":"\u001b[0mPOST /api/v1/rag/chat \u001b[32m200\u001b[0m 3933.282 ms - 379\u001b[0m","timestamp":"2026-03-12T17:30:41.757Z"}
+{"level":"info","message":"\u001b[0mPOST /api/v1/rag/chat \u001b[32m200\u001b[0m 2349.112 ms - 147\u001b[0m","timestamp":"2026-03-12T17:35:08.662Z"}
+{"level":"info","message":"\u001b[0mPOST /api/v1/rag/chat \u001b[32m200\u001b[0m 2616.486 ms - 300\u001b[0m","timestamp":"2026-03-12T17:35:18.323Z"}
+{"level":"info","message":"\u001b[0mPOST /api/v1/rag/chat \u001b[32m200\u001b[0m 3618.274 ms - 389\u001b[0m","timestamp":"2026-03-12T17:35:27.075Z"}
+{"level":"info","message":"\u001b[0mPOST /api/v1/rag/chat \u001b[31m502\u001b[0m 4244.591 ms - 61\u001b[0m","timestamp":"2026-03-12T17:39:46.325Z"}
+{"level":"info","message":"\u001b[0mPOST /api/v1/rag/chat \u001b[32m200\u001b[0m 4252.465 ms - 143\u001b[0m","timestamp":"2026-03-12T17:39:52.840Z"}
+{"level":"info","message":"\u001b[0mPOST /api/v1/rag/chat \u001b[32m200\u001b[0m 7167.943 ms - 1120\u001b[0m","timestamp":"2026-03-12T17:40:08.205Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/transactions \u001b[36m304\u001b[0m 55.350 ms - -\u001b[0m","timestamp":"2026-03-12T17:40:33.503Z"}
+{"level":"info","message":"\u001b[0mGET /api/v1/transactions \u001b[36m304\u001b[0m 3.756 ms - -\u001b[0m","timestamp":"2026-03-12T17:40:33.508Z"}
+{"level":"info","message":"\u001b[0mPOST /api/v1/rag/chat \u001b[32m200\u001b[0m 3511.307 ms - 329\u001b[0m","timestamp":"2026-03-12T17:41:20.183Z"}
