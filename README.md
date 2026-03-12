@@ -3,6 +3,7 @@
   <h1>FINORA</h1>
   <p><strong>The Enterprise Financial Operating System with embedded AI Intelligence</strong></p>
   
+  
   <p>
     <a href="#overview"><img src="https://img.shields.io/badge/Status-Active-brightgreen.svg" alt="Status" /></a>
     <a href="#tech-stack"><img src="https://img.shields.io/badge/Tech-Next.js%20%7C%20Node%20%7C%20Python-blue.svg" alt="Tech Stack" /></a>
