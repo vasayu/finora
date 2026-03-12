@@ -12,6 +12,11 @@ import {
   AlertTriangle,
   Calendar,
   Table,
+  TrendingUp,
+  TrendingDown,
+  Layers,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import { AgGridReact } from "ag-grid-react";
 import {
@@ -59,6 +64,10 @@ export default function BalanceSheetPage() {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"modern" | "grid">("modern");
+  const [fullScreenPanel, setFullScreenPanel] = useState<"ledger" | "ai" | null>(null);
+
+  const isLedgerFS = fullScreenPanel === "ledger";
+  const isAiFS = fullScreenPanel === "ai";
   const [asOfDate, setAsOfDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -179,89 +188,164 @@ export default function BalanceSheetPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between shrink-0">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <FileText className="text-primary" size={24} />
-            Balance Sheet
-          </h1>
-          <p className="text-foreground/50 text-sm mt-1">
-            Transaction-driven asset, liability, and equity ledger
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {/* View Toggle */}
-          <div className="flex bg-white/[0.03] border border-white/[0.08] rounded-xl p-1 shrink-0">
-            <button
-              onClick={() => setViewMode("modern")}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
-                viewMode === "modern"
-                  ? "bg-primary text-white shadow-md"
-                  : "text-foreground/60 hover:text-foreground hover:bg-white/[0.05]"
-              }`}
-            >
-              <FileText size={14} />
-              Modern
-            </button>
-            <button
-              onClick={() => setViewMode("grid")}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
-                viewMode === "grid"
-                  ? "bg-primary text-white shadow-md"
-                  : "text-foreground/60 hover:text-foreground hover:bg-white/[0.05]"
-              }`}
-            >
-              <Table size={14} />
-              Excel View
-            </button>
+      {!fullScreenPanel && (
+        <div className="mb-6 flex items-center justify-between shrink-0">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <FileText className="text-primary" size={24} />
+              Balance Sheet
+            </h1>
+            <p className="text-foreground/50 text-sm mt-1">
+              Transaction-driven asset, liability, and equity ledger
+            </p>
           </div>
 
-          {/* As-Of Date Picker */}
-          <div className="flex items-center gap-2 bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-2">
-            <Calendar size={16} className="text-primary" />
-            <input
-              type="date"
-              value={asOfDate}
-              onChange={(e) => setAsOfDate(e.target.value)}
-              className="bg-transparent text-foreground text-sm font-mono focus:outline-none"
-            />
-          </div>
-
-          {/* Balance Check */}
-          {data && (
-            <div
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm font-medium ${
-                data.balanced
-                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                  : "bg-rose-500/10 border-rose-500/30 text-rose-400"
-              }`}
-            >
-              {data.balanced ? (
-                <CheckCircle2 size={16} />
-              ) : (
-                <AlertTriangle size={16} />
-              )}
-              {data.balanced ? "A = L + E ✓" : "Imbalanced ✗"}
+          <div className="flex items-center gap-3">
+            {/* View Toggle */}
+            <div className="flex bg-white/3 border border-white/8 rounded-xl p-1 shrink-0">
+              <button
+                onClick={() => setViewMode("modern")}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
+                  viewMode === "modern"
+                    ? "bg-primary text-white shadow-md"
+                    : "text-foreground/60 hover:text-foreground hover:bg-white/5"
+                }`}
+              >
+                <FileText size={14} />
+                Modern
+              </button>
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
+                  viewMode === "grid"
+                    ? "bg-primary text-white shadow-md"
+                    : "text-foreground/60 hover:text-foreground hover:bg-white/5"
+                }`}
+              >
+                <Table size={14} />
+                Excel View
+              </button>
             </div>
-          )}
 
-          {/* Export Button */}
-          <button
-            onClick={handleExport}
-            disabled={exporting || loading}
-            className="flex items-center gap-2 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/[0.15] text-foreground/80 hover:text-foreground px-4 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
-          >
-            <Download size={16} />
-            {exporting ? "Exporting..." : "Export Excel"}
-          </button>
+            {/* As-Of Date Picker */}
+            <div className="flex items-center gap-2 bg-white/3 border border-white/8 rounded-xl px-3 py-2">
+              <Calendar size={16} className="text-primary" />
+              <input
+                type="date"
+                value={asOfDate}
+                onChange={(e) => setAsOfDate(e.target.value)}
+                className="bg-transparent text-foreground text-sm font-mono focus:outline-none"
+              />
+            </div>
+
+            {/* Balance Check */}
+            {data && (
+              <div
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm font-medium ${
+                  data.balanced
+                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                    : "bg-rose-500/10 border-rose-500/30 text-rose-400"
+                }`}
+              >
+                {data.balanced ? (
+                  <CheckCircle2 size={16} />
+                ) : (
+                  <AlertTriangle size={16} />
+                )}
+                {data.balanced ? "A = L + E ✓" : "Imbalanced ✗"}
+              </div>
+            )}
+
+            {/* Export Button */}
+            <button
+              onClick={handleExport}
+              disabled={exporting || loading}
+              className="flex items-center gap-2 bg-white/5 hover:bg-white/8 border border-white/8 hover:border-white/15 text-foreground/80 hover:text-foreground px-4 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
+            >
+              <Download size={16} />
+              {exporting ? "Exporting..." : "Export Excel"}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* KPI Cards (Grand Summary Moved to Top) */}
+      {data && !fullScreenPanel && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 shrink-0">
+          <div className="bg-[#0a0a0a] border border-emerald-500/20 rounded-2xl p-6 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <TrendingUp size={48} className="text-emerald-400" />
+            </div>
+            <div className="relative z-10">
+              <p className="text-sm text-foreground/50 uppercase tracking-widest font-semibold mb-2">
+                Total Assets
+              </p>
+              <p className="text-3xl font-bold font-mono text-emerald-400">
+                {formatCurrency(data.totalAssets)}
+              </p>
+            </div>
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-linear-to-r from-emerald-500/50 to-transparent" />
+          </div>
+
+          <div className="bg-[#0a0a0a] border border-rose-500/20 rounded-2xl p-6 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <TrendingDown size={48} className="text-rose-400" />
+            </div>
+            <div className="relative z-10">
+              <p className="text-sm text-foreground/50 uppercase tracking-widest font-semibold mb-2">
+                Total Liabilities
+              </p>
+              <p className="text-3xl font-bold font-mono text-rose-400">
+                {formatCurrency(data.totalLiabilities)}
+              </p>
+            </div>
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-linear-to-r from-rose-500/50 to-transparent" />
+          </div>
+
+          <div className="bg-[#0a0a0a] border border-blue-500/20 rounded-2xl p-6 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Layers size={48} className="text-blue-400" />
+            </div>
+            <div className="relative z-10">
+              <p className="text-sm text-foreground/50 uppercase tracking-widest font-semibold mb-2">
+                Total Equity
+              </p>
+              <p className="text-3xl font-bold font-mono text-blue-400">
+                {formatCurrency(data.totalEquity)}
+              </p>
+            </div>
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-linear-to-r from-blue-500/50 to-transparent" />
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-1 gap-6 overflow-hidden">
-        {/* Balance Sheet Table */}
-        <div className="flex-1 overflow-y-auto bg-[#0a0a0a] border border-white/[0.06] rounded-2xl p-6">
-          {loading ? (
+        {/* Balance Sheet Ledger */}
+        <div
+          className={`bg-[#0a0a0a] border border-white/6 rounded-2xl flex flex-col overflow-hidden transition-all duration-300 ${
+            isLedgerFS
+              ? "flex-1"
+              : isAiFS
+                ? "hidden"
+                : "w-[60%] min-w-[30%] max-w-[80%] resize-x"
+          }`}
+        >
+          <div className="flex items-center justify-between p-4 border-b border-white/6 bg-white/2 shrink-0">
+            <div className="flex items-center gap-2">
+              <Table size={18} className="text-primary" />
+              <span className="font-semibold text-foreground">Ledger View</span>
+            </div>
+            <button
+              onClick={() => setFullScreenPanel(isLedgerFS ? null : "ledger")}
+              className="text-foreground/50 hover:text-foreground p-1 transition-colors"
+              title={isLedgerFS ? "Exit Full Screen" : "Full Screen"}
+            >
+              {isLedgerFS ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-6">
+            {loading ? (
             <div className="flex items-center justify-center h-full">
               <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
             </div>
@@ -354,10 +438,10 @@ export default function BalanceSheetPage() {
                             <div
                               className={`flex items-center justify-between px-4 py-2.5 rounded-lg transition-colors ${
                                 row.isTotal
-                                  ? "bg-white/[0.04] border border-white/[0.08] mt-2"
+                                  ? "bg-white/4 border border-white/8 mt-2"
                                   : row.isSubtotal
-                                    ? "border-t border-white/[0.06] mt-1"
-                                    : "hover:bg-white/[0.02]"
+                                    ? "border-t border-white/6 mt-1"
+                                    : "hover:bg-white/2"
                               }`}
                             >
                               <span
@@ -392,50 +476,40 @@ export default function BalanceSheetPage() {
                   </div>
                 );
               })}
-
-              {/* Grand Summary */}
-              <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/[0.06]">
-                <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-4 text-center">
-                  <p className="text-xs text-foreground/40 uppercase tracking-wider mb-1">
-                    Total Assets
-                  </p>
-                  <p className="text-lg font-bold font-mono text-emerald-400">
-                    {formatCurrency(data.totalAssets)}
-                  </p>
-                </div>
-                <div className="bg-rose-500/5 border border-rose-500/10 rounded-xl p-4 text-center">
-                  <p className="text-xs text-foreground/40 uppercase tracking-wider mb-1">
-                    Total Liabilities
-                  </p>
-                  <p className="text-lg font-bold font-mono text-rose-400">
-                    {formatCurrency(data.totalLiabilities)}
-                  </p>
-                </div>
-                <div className="bg-blue-500/5 border border-blue-500/10 rounded-xl p-4 text-center">
-                  <p className="text-xs text-foreground/40 uppercase tracking-wider mb-1">
-                    Total Equity
-                  </p>
-                  <p className="text-lg font-bold font-mono text-blue-400">
-                    {formatCurrency(data.totalEquity)}
-                  </p>
-                </div>
-              </div>
             </div>
           )}
+          </div>
         </div>
 
         {/* AI Analysis Sidebar */}
-        <div className="w-[400px] bg-[#0a0a0a] border border-white/[0.06] rounded-2xl flex flex-col shrink-0 overflow-hidden">
-          <div className="p-5 border-b border-white/[0.06] flex items-center justify-between bg-white/[0.02]">
+        <div
+          className={`bg-[#0a0a0a] border border-white/6 rounded-2xl flex flex-col shrink-0 overflow-hidden transition-all duration-300 ${
+            isAiFS
+              ? "flex-1"
+              : isLedgerFS
+                ? "hidden"
+                : "flex-1 min-w-[350px] max-w-[800px] resize-x overflow-auto"
+          }`}
+        >
+          <div className="p-4 border-b border-white/6 flex items-center justify-between bg-white/2 shrink-0">
             <div className="flex items-center gap-2">
               <Sparkles size={18} className="text-primary" />
               <span className="font-semibold text-foreground">AI Insights</span>
             </div>
-            {analysis && (
-              <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded-md flex items-center gap-1">
-                <Activity size={12} /> Live
-              </span>
-            )}
+            <div className="flex items-center gap-2">
+              {analysis && (
+                <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded-md flex items-center gap-1">
+                  <Activity size={12} /> Live
+                </span>
+              )}
+              <button
+                onClick={() => setFullScreenPanel(isAiFS ? null : "ai")}
+                className="text-foreground/50 hover:text-foreground p-1 transition-colors"
+                title={isAiFS ? "Exit Full Screen" : "Full Screen"}
+              >
+                {isAiFS ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+              </button>
+            </div>
           </div>
 
           <div className="p-5 flex-1 overflow-y-auto">
@@ -485,7 +559,7 @@ export default function BalanceSheetPage() {
             )}
           </div>
 
-          <div className="p-4 border-t border-white/[0.06] bg-white/[0.01]">
+          <div className="p-4 border-t border-white/6 bg-white/1">
             <button
               onClick={runAnalysis}
               disabled={analyzing || loading || !data || data.rows.length === 0}
