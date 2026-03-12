@@ -33,15 +33,16 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const mockChartData = [
-  { month: "Jan", revenue: 4000, expenses: 2400 },
-  { month: "Feb", revenue: 3000, expenses: 1398 },
-  { month: "Mar", revenue: 5000, expenses: 3200 },
-  { month: "Apr", revenue: 4780, expenses: 3908 },
-  { month: "May", revenue: 5890, expenses: 4800 },
-  { month: "Jun", revenue: 6390, expenses: 3800 },
-  { month: "Jul", revenue: 7490, expenses: 4300 },
-];
+const formatCurrency = (value: number) => {
+  const absVal = Math.abs(value);
+  const formatted = new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(absVal);
+  return value < 0 ? `(${formatted})` : formatted;
+};
 
 interface DashboardData {
   totalRevenue: number;
@@ -52,11 +53,22 @@ interface DashboardData {
   alertCount: number;
   unreadAlertCount: number;
   recentAlerts: any[];
+  chartData: { month: string; revenue: number; expenses: number }[];
+  serverUptime: string;
+  latestIncomeAmount?: number;
+  latestExpenseAmount?: number;
 }
 
 // ─── Role-specific card configurations ────────────────────────────
 
 function getCardsForRole(role: string, data: DashboardData | null) {
+  const latestIncome = data?.latestIncomeAmount || 0;
+  const latestExpense = data?.latestExpenseAmount || 0;
+
+  const revTrendStr = latestIncome > 0 ? `+${formatCurrency(latestIncome)} latest` : "No recent income";
+  const expTrendStr = latestExpense > 0 ? `+${formatCurrency(latestExpense)} latest` : "No recent expense";
+  const profTrendStr = "Based on recent activity";
+
   switch (role) {
     case "EMPLOYEE":
       return [
@@ -66,7 +78,7 @@ function getCardsForRole(role: string, data: DashboardData | null) {
           icon: Wallet,
           color: "text-red-400",
           bg: "bg-red-500/10",
-          trend: "-3.2%",
+          trend: expTrendStr,
           trendUp: false,
           isCurrency: true,
         },
@@ -76,7 +88,7 @@ function getCardsForRole(role: string, data: DashboardData | null) {
           icon: DollarSign,
           color: "text-emerald-400",
           bg: "bg-emerald-500/10",
-          trend: "+5.1%",
+          trend: revTrendStr,
           trendUp: true,
           isCurrency: true,
         },
@@ -110,7 +122,7 @@ function getCardsForRole(role: string, data: DashboardData | null) {
           icon: DollarSign,
           color: "text-emerald-400",
           bg: "bg-emerald-500/10",
-          trend: "+12.5%",
+          trend: revTrendStr,
           trendUp: true,
           isCurrency: true,
         },
@@ -120,7 +132,7 @@ function getCardsForRole(role: string, data: DashboardData | null) {
           icon: TrendingDown,
           color: "text-red-400",
           bg: "bg-red-500/10",
-          trend: "-3.2%",
+          trend: expTrendStr,
           trendUp: false,
           isCurrency: true,
         },
@@ -154,7 +166,7 @@ function getCardsForRole(role: string, data: DashboardData | null) {
           icon: Crown,
           color: "text-primary",
           bg: "bg-primary/10",
-          trend: "+18.7%",
+          trend: profTrendStr,
           trendUp: true,
           isCurrency: true,
         },
@@ -164,7 +176,7 @@ function getCardsForRole(role: string, data: DashboardData | null) {
           icon: TrendingUp,
           color: "text-emerald-400",
           bg: "bg-emerald-500/10",
-          trend: "+8.3%",
+          trend: profTrendStr,
           trendUp: true,
           isCurrency: true,
         },
@@ -174,7 +186,7 @@ function getCardsForRole(role: string, data: DashboardData | null) {
           icon: DollarSign,
           color: "text-blue-400",
           bg: "bg-blue-500/10",
-          trend: "+12.5%",
+          trend: revTrendStr,
           trendUp: true,
           isCurrency: true,
         },
@@ -198,7 +210,7 @@ function getCardsForRole(role: string, data: DashboardData | null) {
           icon: Target,
           color: "text-purple-400",
           bg: "bg-purple-500/10",
-          trend: "-5.2%",
+          trend: expTrendStr,
           trendUp: false,
           isCurrency: true,
         },
@@ -208,8 +220,8 @@ function getCardsForRole(role: string, data: DashboardData | null) {
           icon: Users,
           color: "text-red-400",
           bg: "bg-red-500/10",
-          trend: "+2.1%",
-          trendUp: true,
+          trend: expTrendStr,
+          trendUp: false,
           isCurrency: true,
         },
         {
@@ -242,7 +254,7 @@ function getCardsForRole(role: string, data: DashboardData | null) {
           icon: PieChart,
           color: "text-cyan-400",
           bg: "bg-cyan-500/10",
-          trend: "+15.3%",
+          trend: revTrendStr,
           trendUp: true,
           isCurrency: true,
         },
@@ -252,7 +264,7 @@ function getCardsForRole(role: string, data: DashboardData | null) {
           icon: TrendingUp,
           color: "text-emerald-400",
           bg: "bg-emerald-500/10",
-          trend: "+22.1%",
+          trend: profTrendStr,
           trendUp: true,
           isCurrency: true,
         },
@@ -262,7 +274,7 @@ function getCardsForRole(role: string, data: DashboardData | null) {
           icon: BarChart3,
           color: "text-primary",
           bg: "bg-primary/10",
-          trend: "+9.6%",
+          trend: profTrendStr,
           trendUp: true,
           isCurrency: true,
         },
@@ -328,6 +340,8 @@ export default function DashboardPage() {
               alertCount: 0,
               unreadAlertCount: 0,
               recentAlerts: [],
+              chartData: [],
+              serverUptime: "0m 0s",
             },
           })),
           api("/transactions", { token }).catch(() => ({
@@ -384,7 +398,7 @@ export default function DashboardPage() {
                 ? `$${card.value.toLocaleString()}`
                 : card.value}
             </p>
-            {card.trend && (
+            {card.trend && card.trend !== "No recent income" && card.trend !== "No recent expense" && (
               <div
                 className={`flex items-center gap-1 mt-1 text-xs ${card.trendUp ? "text-emerald-400" : "text-red-400"}`}
               >
@@ -393,7 +407,12 @@ export default function DashboardPage() {
                 ) : (
                   <ArrowDownRight size={14} />
                 )}
-                {card.trend} from last month
+                {card.trend}
+              </div>
+            )}
+            {(card.trend === "No recent income" || card.trend === "No recent expense") && (
+              <div className="flex items-center gap-1 mt-1 text-xs text-foreground/40">
+                {card.trend}
               </div>
             )}
           </div>
@@ -413,7 +432,7 @@ export default function DashboardPage() {
           </h2>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={mockChartData}>
+              <AreaChart data={data?.chartData || []}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
@@ -497,6 +516,77 @@ export default function DashboardPage() {
                     {tx.type === "INCOME" ? "+" : "-"}$
                     {tx.amount?.toLocaleString()}
                   </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* System Health & Alerts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        {/* System Uptime */}
+        <div className="bg-[#0a0a0a] border border-white/[0.06] rounded-2xl p-6 flex flex-col items-center justify-center min-h-[160px]">
+          <div className="bg-emerald-500/10 text-emerald-400 p-3 rounded-xl mb-4">
+            <Activity size={24} />
+          </div>
+          <p className="text-sm font-medium text-foreground/50 mb-1">
+            System Uptime
+          </p>
+          <p className="text-3xl font-bold font-mono text-foreground">
+            {data?.serverUptime || "Loading..."}
+          </p>
+          <div className="mt-2 flex items-center gap-1.5 text-xs text-emerald-400">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            All systems operational
+          </div>
+        </div>
+
+        {/* Recent Alerts */}
+        <div className="bg-[#0a0a0a] border border-white/[0.06] rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-foreground">
+              Recent Alerts
+            </h2>
+            {data?.unreadAlertCount ? (
+              <span className="bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                {data.unreadAlertCount} new
+              </span>
+            ) : null}
+          </div>
+
+          {!data?.recentAlerts || data.recentAlerts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-6 text-foreground/40">
+              <CheckCircle size={32} className="mb-2 opacity-50" />
+              <p className="text-sm">No recent alerts</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {data.recentAlerts.map((alert: any) => (
+                <div
+                  key={alert.id}
+                  className={`flex gap-3 p-3 rounded-xl border ${
+                    !alert.isRead
+                      ? "bg-rose-500/5 border-rose-500/20"
+                      : "bg-white/[0.02] border-white/[0.05]"
+                  }`}
+                >
+                  <div
+                    className={`mt-0.5 shrink-0 ${!alert.isRead ? "text-rose-400" : "text-foreground/40"}`}
+                  >
+                    <ShieldAlert size={16} />
+                  </div>
+                  <div>
+                    <p className="text-sm text-foreground/90 font-medium">
+                      {alert.message}
+                    </p>
+                    <p className="text-xs text-foreground/40 mt-1">
+                      {new Date(alert.createdAt).toLocaleString()}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
