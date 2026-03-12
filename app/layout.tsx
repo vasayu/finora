@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/Components/ThemeProvider";
-import Footer from "@/Components/Footer";
 import { AuthProvider } from "@/Components/AuthProvider";
-import SmoothScroll from "@/Components/SmoothScroll";
-import Navbar from "@/Components/Navbar";
+import ScrollMinimap from "@/Components/ScrollMinimap";
+import Footer from "@/Components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,14 +34,12 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-<AuthProvider>
-          <SmoothScroll>
-            <Navbar />
+          <AuthProvider>
+            <ScrollMinimap />
             {children}
-            <Footer/>
-          </SmoothScroll>
           </AuthProvider>
         </ThemeProvider>
+        <Footer/>
       </body>
     </html>
   );

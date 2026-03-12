@@ -82,6 +82,7 @@ export default function Architecture() {
 
   return (
     <section
+      id="architecture"
       ref={containerRef}
       className="relative w-full h-screen bg-background transition-colors duration-500 overflow-hidden flex items-center justify-center py-20"
     >
