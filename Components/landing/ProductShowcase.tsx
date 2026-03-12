@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import { motion, useSpring, useTransform } from "framer-motion";
 import { Activity, BarChart3, Database, Users, Zap } from "lucide-react";
-import Magnetic from "./Magnetic";
+import Magnetic from "../Magnetic";
 
 export default function ProductShowcase() {
   const containerRef = useRef<HTMLDivElement>(null);

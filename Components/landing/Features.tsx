@@ -11,7 +11,7 @@ import {
   RefreshCw,
   Layers,
 } from "lucide-react";
-import Magnetic from "./Magnetic";
+import Magnetic from "../Magnetic";
 
 gsap.registerPlugin(ScrollTrigger);
 

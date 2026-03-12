@@ -5,7 +5,7 @@ import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Box, Twitter, Linkedin, Github } from "lucide-react";
-import Magnetic from "./Magnetic";
+import Magnetic from "../Magnetic";
 
 gsap.registerPlugin(ScrollTrigger);
 

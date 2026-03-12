@@ -5,7 +5,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight, Sparkles } from "lucide-react";
-import Magnetic from "./Magnetic";
+import Magnetic from "../Magnetic";
 import Link from "next/link";
 
 gsap.registerPlugin(ScrollTrigger);

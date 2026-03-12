@@ -1,6 +1,9 @@
 import { DocumentsRepository } from './documents.repository';
 import path from 'path';
 import fs from 'fs';
+import logger from '../../utils/logger';
+
+const RAG_SERVICE_URL = process.env.RAG_SERVICE_URL || 'http://localhost:8000';
 
 const UPLOAD_DIR = path.join(process.cwd(), 'uploads');
 
@@ -31,6 +34,19 @@ export class DocumentsService {
             user: { connect: { id: userId } },
             ...(organizationId && { organization: { connect: { id: organizationId } } })
         });
+
+        // Fire-and-forget: trigger RAG ingestion (non-blocking — upload responds instantly)
+        fetch(`${RAG_SERVICE_URL}/ingest`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                document_id: document.id,
+                file_path: filePath,
+                file_name: file.originalname,
+                organization_id: organizationId || null,
+            }),
+        }).catch((err) => logger.error(`RAG auto-ingest failed for doc ${document.id}: ${err.message}`));
 
         return document;
     }

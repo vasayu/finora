@@ -4,8 +4,8 @@ import { useEffect, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import gsap from "gsap";
 import { ArrowRight, Activity, Cpu, Network } from "lucide-react";
-import HeroBackground from "./HeroBackground";
-import Magnetic from "./Magnetic";
+import HeroBackground from "../HeroBackground";
+import Magnetic from "../Magnetic";
 import Link from "next/link";
 
 export default function Hero() {

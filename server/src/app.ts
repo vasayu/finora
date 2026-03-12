@@ -15,14 +15,11 @@ import dashboardRoutes from './modules/dashboard/dashboard.routes';
 import alertsRoutes from './modules/alerts/alerts.routes';
 import aiRoutes from './modules/ai/ai.routes';
 import stocksRoutes from './modules/stocks/stocks.routes';
-import watchlistRoutes from './modules/watchlist/watchlist.routes';
+import ragRoutes from './modules/rag/rag.routes';
 const app = express();
 
 app.use(helmet());
-app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    credentials: true,
-}));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -49,7 +46,7 @@ app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/alerts', alertsRoutes);
 app.use('/api/v1/ai', aiRoutes);
 app.use('/api/v1/stocks', stocksRoutes);
-app.use('/api/v1/watchlist', watchlistRoutes);
+app.use('/api/v1/rag', ragRoutes);
 // Global Error Handler
 app.use(errorHandler);
 
