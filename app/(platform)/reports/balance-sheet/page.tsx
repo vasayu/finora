@@ -142,15 +142,20 @@ export default function BalanceSheetPage() {
 
   const colDefs = useMemo<any[]>(
     () => [
-      { field: "section", headerName: "Section", minWidth: 150 },
-      { field: "subSection", headerName: "Sub Section", minWidth: 200 },
-      { field: "account", headerName: "Account", minWidth: 250 },
+      { field: "section", headerName: "Section", minWidth: 150, filter: true },
+      { field: "subSection", headerName: "Sub Section", minWidth: 200, filter: true },
+      { field: "account", headerName: "Account", minWidth: 250, filter: true },
       {
         field: "balance",
         headerName: "Balance",
         valueFormatter: (params: any) =>
           params.value != null ? formatCurrency(params.value) : "",
-        cellClass: "text-right font-mono text-emerald-400 font-medium",
+        cellClassRules: {
+          "text-emerald-400": (params: any) => params.value > 0,
+          "text-rose-400": (params: any) => params.value < 0,
+          "text-foreground/60": (params: any) => params.value === 0,
+        },
+        cellClass: "text-right font-mono font-medium",
         headerClass: "text-right",
       },
     ],
@@ -162,17 +167,34 @@ export default function BalanceSheetPage() {
       flex: 1,
       resizable: true,
       sortable: true,
+      floatingFilter: true,
+      filterParams: {
+        buttons: ["reset", "apply"],
+      },
     }),
     []
   );
+
+  const getRowStyle = (params: any) => {
+    if (params.data.isTotal) {
+      return { background: "rgba(255,255,255,0.08)", fontWeight: "bold", fontStyle: "normal", borderTop: "2px solid rgba(255,255,255,0.2)" };
+    }
+    if (params.data.isSubtotal) {
+      return { background: "rgba(255,255,255,0.03)", fontWeight: "normal", fontStyle: "italic", borderTop: "1px solid rgba(255,255,255,0.1)" };
+    }
+    return undefined;
+  };
 
   const myTheme = themeBalham.withParams({
     backgroundColor: "#0a0a0a",
     foregroundColor: "#ededed",
     headerBackgroundColor: "#111111",
     headerTextColor: "#a3a3a3",
-    borderColor: "rgba(255,255,255,0.06)",
-    rowHoverColor: "rgba(255,255,255,0.02)",
+    borderColor: "rgba(255,255,255,0.15)",
+    rowHoverColor: "rgba(255,255,255,0.05)",
+    rowBorder: true,
+    columnBorder: true,
+    wrapperBorder: true,
     fontFamily: "inherit",
     fontSize: 14,
   });
@@ -364,6 +386,7 @@ export default function BalanceSheetPage() {
                 rowData={data.rows}
                 columnDefs={colDefs}
                 defaultColDef={defaultColDef}
+                getRowStyle={getRowStyle}
                 animateRows={true}
               />
             </div>

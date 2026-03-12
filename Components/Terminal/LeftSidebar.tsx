@@ -245,17 +245,16 @@ export default function LeftSidebar() {
             onFocus={() => searchResults.length > 0 && setShowResults(true)}
             className="w-full bg-[#0a0f1c] border border-[#1c2940] rounded-lg py-2 pl-9 pr-9 text-sm text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all font-mono"
           />
-        </div>
 
-        {/* Search Results Dropdown */}
-        <AnimatePresence>
-          {showResults && searchResults.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              className="absolute z-50 left-3 right-3 mt-2 bg-[#0d1424] border border-[#1c2940] rounded-xl shadow-2xl overflow-hidden max-h-72 overflow-y-auto"
-            >
+          {/* Search Results Dropdown */}
+          <AnimatePresence>
+            {showResults && searchResults.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                className="absolute z-50 left-0 right-0 top-full mt-2 bg-[#0d1424] border border-[#1c2940] rounded-xl shadow-2xl overflow-hidden max-h-72 overflow-y-auto"
+              >
               {searchResults.map((result) => {
                 const alreadyAdded = isInWatchlist(result.symbol);
                 return (
@@ -310,6 +309,7 @@ export default function LeftSidebar() {
             </motion.div>
           )}
         </AnimatePresence>
+        </div>
       </div>
 
       {/* Watchlists */}

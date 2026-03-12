@@ -62,27 +62,8 @@ export default function PnLPage() {
         }))
     : [];
 
-  // Mock data for Income vs Expense trend (since backend currently returns totals)
-  // In a real scenario, this would be an array of monthly/weekly totals from the API
-  const trendData = data
-    ? [
-        {
-          name: "Period 1",
-          Income: data.totalIncome * 0.8,
-          Expenses: data.totalExpense * 0.7,
-        },
-        {
-          name: "Period 2",
-          Income: data.totalIncome * 0.9,
-          Expenses: data.totalExpense * 0.85,
-        },
-        {
-          name: "Current",
-          Income: data.totalIncome,
-          Expenses: data.totalExpense,
-        },
-      ]
-    : [];
+  // Map the new dynamic chronological array delivered by the financials backend
+  const dynamicTrendData = data?.monthlyTrend || [];
 
   if (loading) {
     return (
@@ -153,7 +134,7 @@ export default function PnLPage() {
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={trendData}
+                data={dynamicTrendData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid

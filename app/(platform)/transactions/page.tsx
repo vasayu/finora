@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/Components/AuthProvider";
 import { api } from "@/lib/api";
-import { Plus, Search, X } from "lucide-react";
+import { Plus, Search, X, Edit2, Trash2, Upload, Download } from "lucide-react";
 
 export default function TransactionsPage() {
   const { token } = useAuth();
@@ -13,6 +13,10 @@ export default function TransactionsPage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("ALL");
   const [submitting, setSubmitting] = useState(false);
+  const [showImportForm, setShowImportForm] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [form, setForm] = useState({
     amount: "",
     type: "EXPENSE",
@@ -37,12 +41,13 @@ export default function TransactionsPage() {
     fetchTransactions();
   }, [token]);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await api("/transactions", {
-        method: "POST",
+      const isEditing = !!editingId;
+      await api(isEditing ? `/transactions/${editingId}` : "/transactions", {
+        method: isEditing ? "PUT" : "POST",
         token,
         body: { ...form, amount: parseFloat(form.amount) },
       });
@@ -53,6 +58,7 @@ export default function TransactionsPage() {
         description: "",
         currency: "USD",
       });
+      setEditingId(null);
       setShowForm(false);
       fetchTransactions();
     } catch (err) {
@@ -60,6 +66,76 @@ export default function TransactionsPage() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleDownloadTemplate = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/transactions/import/template`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Finora_Transactions_Template.xlsx";
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to download template", err);
+    }
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/transactions/import/upload`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData
+      });
+      setShowImportForm(false);
+      fetchTransactions();
+    } catch (err) {
+      console.error("Import failed", err);
+    } finally {
+      setImporting(false);
+      // Reset input
+      e.target.value = '';
+    }
+  };
+
+  const handleEdit = (tx: any) => {
+    setForm({
+      amount: tx.amount.toString(),
+      type: tx.type,
+      category: tx.category,
+      description: tx.description || "",
+      currency: tx.currency,
+    });
+    setEditingId(tx.id);
+    setShowForm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirmId) return;
+    const idToDelete = deleteConfirmId;
+    setDeleteConfirmId(null); // Close the dialog immediately
+    try {
+      await api(`/transactions/${idToDelete}`, { method: "DELETE", token });
+      fetchTransactions();
+    } catch (err) {
+      console.error("Failed to delete", err);
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    setDeleteConfirmId(id);
   };
 
   const filtered = transactions.filter((tx) => {
@@ -79,12 +155,30 @@ export default function TransactionsPage() {
             Manage your financial transactions
           </p>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="inline-flex items-center gap-2 bg-primary hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-primary/20"
-        >
-          <Plus size={16} /> Add Transaction
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowImportForm(true)}
+            className="inline-flex items-center gap-2 bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] text-foreground text-sm font-semibold px-4 py-2.5 rounded-xl transition-all"
+          >
+            <Upload size={16} /> Import Excel
+          </button>
+          <button
+            onClick={() => {
+              setEditingId(null);
+              setForm({
+                amount: "",
+                type: "EXPENSE",
+                category: "",
+                description: "",
+                currency: "USD",
+              });
+              setShowForm(true);
+            }}
+            className="inline-flex items-center gap-2 bg-primary hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-primary/20"
+          >
+            <Plus size={16} /> Add Transaction
+          </button>
+        </div>
       </div>
 
       {/* Create Modal */}
@@ -96,13 +190,16 @@ export default function TransactionsPage() {
                 New Transaction
               </h2>
               <button
-                onClick={() => setShowForm(false)}
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingId(null);
+                }}
                 className="text-foreground/40 hover:text-foreground"
               >
                 <X size={20} />
               </button>
             </div>
-            <form onSubmit={handleCreate} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-medium text-foreground/60 mb-1.5 block">
@@ -138,16 +235,39 @@ export default function TransactionsPage() {
                 <label className="text-xs font-medium text-foreground/60 mb-1.5 block">
                   Category
                 </label>
-                <input
-                  type="text"
+                <select
                   required
                   value={form.category}
                   onChange={(e) =>
                     setForm({ ...form, category: e.target.value })
                   }
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-all"
-                  placeholder="e.g. Marketing, Sales, Payroll"
-                />
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-all cursor-pointer"
+                >
+                  <option value="" disabled className="bg-[#0a0a0a] text-foreground/50">Select category...</option>
+                  {form.type === "INCOME" ? (
+                    <>
+                      <option value="Sales" className="bg-[#0a0a0a]">Sales / Revenue</option>
+                      <option value="Services" className="bg-[#0a0a0a]">Service Income</option>
+                      <option value="Investment" className="bg-[#0a0a0a]">Investment Return</option>
+                      <option value="Capital" className="bg-[#0a0a0a]">Share Capital</option>
+                      <option value="Loan" className="bg-[#0a0a0a]">Loan Received</option>
+                      <option value="Other Income" className="bg-[#0a0a0a]">Other Income</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="Payroll" className="bg-[#0a0a0a]">Payroll & Salaries</option>
+                      <option value="Marketing" className="bg-[#0a0a0a]">Marketing & Ads</option>
+                      <option value="Equipment" className="bg-[#0a0a0a]">Equipment & Property</option>
+                      <option value="Software" className="bg-[#0a0a0a]">Software & SaaS</option>
+                      <option value="Inventory" className="bg-[#0a0a0a]">Inventory & Raw Materials</option>
+                      <option value="Utilities" className="bg-[#0a0a0a]">Utilities & Rent</option>
+                      <option value="Insurance" className="bg-[#0a0a0a]">Prepaid Expenses & Insurance</option>
+                      <option value="Vendor" className="bg-[#0a0a0a]">Contractors & Vendors</option>
+                      <option value="Debt Paydown" className="bg-[#0a0a0a]">Debt Servicing</option>
+                      <option value="Other Expense" className="bg-[#0a0a0a]">Other Expenses</option>
+                    </>
+                  )}
+                </select>
               </div>
               <div>
                 <label className="text-xs font-medium text-foreground/60 mb-1.5 block">
@@ -168,9 +288,98 @@ export default function TransactionsPage() {
                 disabled={submitting}
                 className="w-full bg-primary hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition-all disabled:opacity-50"
               >
-                {submitting ? "Creating..." : "Create Transaction"}
+                {submitting ? "Saving..." : editingId ? "Update Transaction" : "Create Transaction"}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Import Modal */}
+      {showImportForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#0a0a0a] border border-white/[0.08] rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <Upload size={18} className="text-primary" />
+                Bulk Import
+              </h2>
+              <button
+                onClick={() => setShowImportForm(false)}
+                className="text-foreground/40 hover:text-foreground"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-4 text-center">
+                <p className="text-sm text-foreground/70 mb-3">
+                  First, download the correct Excel template. It contains exactly the columns required by Finora.
+                </p>
+                <button
+                  onClick={handleDownloadTemplate}
+                  className="w-full inline-flex justify-center items-center gap-2 bg-white/[0.05] hover:bg-white/[0.1] text-foreground font-semibold py-2.5 rounded-xl transition-all border border-white/[0.08]"
+                >
+                  <Download size={16} /> Download Template
+                </button>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground mb-3 block">
+                  Upload Filled Template
+                </label>
+                <label className="border-2 border-dashed border-white/[0.1] hover:border-primary/50 bg-white/[0.02] hover:bg-primary/5 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all group">
+                  {importing ? (
+                    <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <Upload size={28} className="text-foreground/40 group-hover:text-primary mb-3 transition-colors" />
+                      <span className="text-sm text-foreground/80 font-medium">Click to upload .xlsx file</span>
+                      <span className="text-xs text-foreground/40 mt-1">Maximum 1000 rows</span>
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    accept=".xlsx"
+                    className="hidden"
+                    onChange={handleImport}
+                    disabled={importing}
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#0a0a0a] border border-white/[0.08] rounded-2xl p-6 w-full max-w-sm shadow-2xl text-center">
+            <div className="flex justify-center mb-4">
+              <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center text-red-400">
+                <Trash2 size={24} />
+              </div>
+            </div>
+            <h2 className="text-lg font-semibold text-foreground mb-2">Delete Transaction?</h2>
+            <p className="text-foreground/60 text-sm mb-6">
+              This action cannot be undone. Are you sure you want to permanently delete this transaction?
+            </p>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-foreground font-medium transition-colors border border-white/[0.08]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-medium transition-colors shadow-lg shadow-red-500/20"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -221,13 +430,16 @@ export default function TransactionsPage() {
               <th className="text-right text-xs font-medium text-foreground/40 px-6 py-4">
                 Amount
               </th>
+              <th className="text-center text-xs font-medium text-foreground/40 px-6 py-4 w-[100px]">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={6}
                   className="text-center py-12 text-foreground/40 text-sm"
                 >
                   Loading...
@@ -236,7 +448,7 @@ export default function TransactionsPage() {
             ) : filtered.length === 0 ? (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={6}
                   className="text-center py-12 text-foreground/40 text-sm"
                 >
                   No transactions found
@@ -269,6 +481,24 @@ export default function TransactionsPage() {
                   >
                     {tx.type === "INCOME" ? "+" : "-"}$
                     {tx.amount?.toLocaleString()}
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => handleEdit(tx)}
+                        className="p-1.5 text-foreground/40 hover:text-blue-400 hover:bg-blue-400/10 rounded-lg transition-colors"
+                        title="Edit Transaction"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(tx.id)}
+                        className="p-1.5 text-foreground/40 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                        title="Delete Transaction"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

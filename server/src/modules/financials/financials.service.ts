@@ -36,14 +36,34 @@ export class FinancialsService {
         let totalIncome = 0;
         let totalExpense = 0;
         const breakdown: Record<string, number> = {};
+        
+        // Dictionary for chronological charting: Map<"Month YYYY", { Income: number, Expenses: number }>
+        const monthlyDataMap = new Map<string, { name: string; Income: number; Expenses: number }>();
 
-        transactions.forEach((tx) => {
+        // Sort transactions chronologically first so the map populates sequentially
+        const sortedTx = [...transactions].sort((a, b) => a.date.getTime() - b.date.getTime());
+
+        sortedTx.forEach((tx) => {
             if (tx.type === 'INCOME') totalIncome += tx.amount;
             if (tx.type === 'EXPENSE') {
                 totalExpense += tx.amount;
                 breakdown[tx.category] = (breakdown[tx.category] || 0) + tx.amount;
             }
+
+            // Group for the Trend Chart
+            const monthYear = tx.date.toLocaleString('default', { month: 'short', year: 'numeric' });
+            if (!monthlyDataMap.has(monthYear)) {
+                monthlyDataMap.set(monthYear, { name: monthYear, Income: 0, Expenses: 0 });
+            }
+            const monthGroup = monthlyDataMap.get(monthYear)!;
+            if (tx.type === 'INCOME') {
+                monthGroup.Income += tx.amount;
+            } else if (tx.type === 'EXPENSE') {
+                monthGroup.Expenses += tx.amount;
+            }
         });
+
+        const monthlyTrend = Array.from(monthlyDataMap.values());
 
         return {
             totalIncome,
@@ -51,6 +71,7 @@ export class FinancialsService {
             netProfit: totalIncome - totalExpense,
             transactionsCount: transactions.length,
             breakdown,
+            monthlyTrend
         };
     }
 
