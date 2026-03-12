@@ -9,12 +9,14 @@ import {
   LineSeries,
 } from "lightweight-charts";
 import { useTerminalStore, Timeframe } from "@/lib/store/terminalStore";
+import { useAuth } from "@/Components/AuthProvider";
 import { api } from "@/lib/api";
 
 export default function TradingChart() {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const { selectedSymbol, selectedTimeframe, setTimeframe, currentStockData } =
     useTerminalStore();
+  const { token } = useAuth();
   const [loading, setLoading] = useState(true);
 
   const timeframes: Timeframe[] = [
@@ -94,6 +96,7 @@ export default function TradingChart() {
         // Fetch OHLCV History
         const histRes = await api(
           `/stocks/history?symbol=${selectedSymbol}&timeframe=${selectedTimeframe}`,
+          { token },
         );
 
         if (isMounted && histRes.data) {
@@ -103,6 +106,7 @@ export default function TradingChart() {
           const lastCandle = histRes.data[histRes.data.length - 1];
           const predRes = await api("/stocks/predict", {
             method: "POST",
+            token,
             body: {
               symbol: selectedSymbol,
               currentPrice: lastCandle.close,
@@ -131,7 +135,7 @@ export default function TradingChart() {
       isMounted = false;
       chart.remove(); // Cleanup resize observers and canvas contexts
     };
-  }, [selectedSymbol, selectedTimeframe]);
+  }, [selectedSymbol, selectedTimeframe, token]);
 
   return (
     <div className="relative w-full h-full flex flex-col pt-1">
