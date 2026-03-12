@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Box, Menu, X, LayoutDashboard, User } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -15,6 +16,15 @@ const Navbar = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user } = useAuth();
+  const router = useRouter();
+
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, item: string) => {
+    if (item === "Platform" && !user) {
+      e.preventDefault();
+      // alert("Please login or register to access the Platform.");
+      router.push("/login");
+    }
+  };
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -60,10 +70,17 @@ const Navbar = () => {
 
         {/* Desktop Links */}
         <div className="hidden md:flex items-center gap-8">
-          {["Platform", "Solutions", "Resources", "Pricing"].map((item) => (
+          {["Platform","Pricing"].map((item) => (
             <Magnetic key={item} strength={15}>
               <Link
-                href={item === "Pricing" ? "/pricing" : "#"}
+                href={
+                  item === "Pricing" 
+                    ? "/pricing" 
+                    : item === "Platform" 
+                      ? (user ? "/dashboard" : "/login") 
+                      : "#"
+                }
+                onClick={(e) => handleLinkClick(e, item)}
                 className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-primary after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-right hover:after:origin-left"
               >
                 {item}
@@ -139,9 +156,18 @@ const Navbar = () => {
             {["Platform", "Solutions", "Resources", "Pricing"].map((item) => (
               <Link
                 key={item}
-                href={item === "Pricing" ? "/pricing" : "#"}
+                href={
+                  item === "Pricing" 
+                    ? "/pricing" 
+                    : item === "Platform" 
+                      ? (user ? "/dashboard" : "/login") 
+                      : "#"
+                }
                 className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors border-b border-border pb-2"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={(e) => {
+                  handleLinkClick(e, item);
+                  setIsMobileMenuOpen(false);
+                }}
               >
                 {item}
               </Link>
