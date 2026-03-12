@@ -9,5 +9,6 @@ router.use(protect);
 
 router.get('/pnl', finController.getPnL);
 router.get('/balance-sheet', finController.getBalanceSheet);
+router.get('/balance-sheet/export', finController.exportBalanceSheet);
 
 export default router;

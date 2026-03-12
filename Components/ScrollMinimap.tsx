@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { useLenis } from "@studio-freight/react-lenis";
+import { useLenis } from "lenis/react";
 import { motion, useScroll, useSpring } from "framer-motion";
 
 // Configuration for the minimap segments corresponding to sections
@@ -122,22 +122,20 @@ export default function ScrollMinimap() {
               >
                 {/* Segment indicator dot/line */}
                 <div
-                  className={`transition-all duration-300 rounded-full ${
-                    isActive
+                  className={`transition-all duration-300 rounded-full ${isActive
                       ? "h-4 w-full bg-[#F97316] shadow-[0_0_12px_rgba(249,115,22,0.8)]"
                       : isHovered
                         ? "h-2 w-full bg-[#F97316]/70"
                         : "h-1 w-1/2 bg-white/40"
-                  }`}
+                    }`}
                 />
 
                 {/* Hover label (pops out to the left) */}
                 <span
-                  className={`absolute right-10 whitespace-nowrap text-xs font-mono font-bold tracking-widest px-2 py-1 rounded-md bg-background/90 text-primary border border-primary/20 backdrop-blur-md shadow-lg transition-all duration-300 origin-right ${
-                    isHovered
+                  className={`absolute right-10 whitespace-nowrap text-xs font-mono font-bold tracking-widest px-2 py-1 rounded-md bg-background/90 text-primary border border-primary/20 backdrop-blur-md shadow-lg transition-all duration-300 origin-right ${isHovered
                       ? "opacity-100 translate-x-0 scale-100"
                       : "opacity-0 translate-x-2 scale-95 pointer-events-none"
-                  }`}
+                    }`}
                 >
                   {section.label}
                 </span>

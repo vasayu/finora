@@ -1,16 +1,18 @@
 import { Router } from 'express';
 import { OrganizationsController } from './organizations.controller';
-import { protect, restrictTo } from '../../middleware/auth.middleware';
+import { protect } from '../../middleware/auth.middleware';
 
 const router = Router();
 const orgController = new OrganizationsController();
 
 router.use(protect);
 
-router.get('/:id', orgController.getOrganization);
-
-router.use(restrictTo('SUPER_ADMIN'));
+// Any authenticated user can access these
+router.get('/my-org', orgController.getMyOrganization);
 router.post('/', orgController.createOrganization);
-router.get('/', orgController.getAllOrganizations);
+router.post('/join', orgController.joinOrganization);
+
+// Get specific org by ID
+router.get('/:id', orgController.getOrganization);
 
 export default router;

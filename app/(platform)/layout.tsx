@@ -19,6 +19,8 @@ export default function PlatformLayout({
     }
   }, [user, isLoading, router]);
 
+
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#050505]">

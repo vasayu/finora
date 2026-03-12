@@ -3,6 +3,12 @@ import { Request, Response, NextFunction } from 'express';
 import { stocksService } from './stocks.service';
 import { catchAsync } from '../../utils/catchAsync';
 
+export const searchStocks = catchAsync(async (req: Request, res: Response) => {
+    const q = (req.query.q as string) || '';
+    const results = stocksService.searchStocks(q);
+    res.status(200).json({ status: 'success', data: results });
+});
+
 export const getHistory = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const { symbol, timeframe, limit } = req.query;
     if (!symbol || !timeframe) {

@@ -34,9 +34,17 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+server/logs\\.ed07d9d6973b293ce9d3d2367342b3b038e7bdc0-audit.json
+
 # vercel
 .vercel
+
+logs/
+*.log
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# logs
+server/logs

@@ -3,8 +3,16 @@
 import React, { useState } from "react";
 import { useAuth } from "@/Components/AuthProvider";
 import { useRouter } from "next/navigation";
-import { Box, Eye, EyeOff } from "lucide-react";
+import { Box, Eye, EyeOff, ChevronDown } from "lucide-react";
 import Link from "next/link";
+
+const ROLES = [
+  { value: "EMPLOYEE", label: "Employee", description: "Team member tracking expenses" },
+  { value: "ACCOUNTANT", label: "Accountant", description: "Managing books & compliance" },
+  { value: "CFO", label: "CFO", description: "Strategic financial leadership" },
+  { value: "MANAGER", label: "Manager", description: "Department budget oversight" },
+  { value: "INVESTOR", label: "Investor", description: "Portfolio & equity tracking" },
+];
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -17,6 +25,7 @@ export default function RegisterPage() {
     password: "",
     firstName: "",
     lastName: "",
+    role: "EMPLOYEE",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -92,6 +101,31 @@ export default function RegisterPage() {
                 />
               </div>
             </div>
+
+            {/* Role Selector */}
+            <div>
+              <label className="text-xs font-medium text-foreground/60 mb-1.5 block">
+                Role
+              </label>
+              <div className="relative">
+                <select
+                  value={form.role}
+                  onChange={(e) => setForm({ ...form, role: e.target.value })}
+                  className="w-full appearance-none bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 pr-10 text-sm text-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all cursor-pointer"
+                >
+                  {ROLES.map((r) => (
+                    <option key={r.value} value={r.value} className="bg-[#111] text-foreground">
+                      {r.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  size={16}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 pointer-events-none"
+                />
+              </div>
+            </div>
+
             <div>
               <label className="text-xs font-medium text-foreground/60 mb-1.5 block">
                 Email

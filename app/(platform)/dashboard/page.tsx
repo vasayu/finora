@@ -11,6 +11,17 @@ import {
   ShieldAlert,
   ArrowUpRight,
   ArrowDownRight,
+  Briefcase,
+  Calculator,
+  Crown,
+  Users,
+  PieChart,
+  FileText,
+  BarChart3,
+  Wallet,
+  Target,
+  Clock,
+  CheckCircle,
 } from "lucide-react";
 import {
   AreaChart,
@@ -43,11 +54,265 @@ interface DashboardData {
   recentAlerts: any[];
 }
 
+// ─── Role-specific card configurations ────────────────────────────
+
+function getCardsForRole(role: string, data: DashboardData | null) {
+  switch (role) {
+    case "EMPLOYEE":
+      return [
+        {
+          label: "My Expenses",
+          value: data?.totalExpenses || 0,
+          icon: Wallet,
+          color: "text-red-400",
+          bg: "bg-red-500/10",
+          trend: "-3.2%",
+          trendUp: false,
+          isCurrency: true,
+        },
+        {
+          label: "My Income",
+          value: data?.totalRevenue || 0,
+          icon: DollarSign,
+          color: "text-emerald-400",
+          bg: "bg-emerald-500/10",
+          trend: "+5.1%",
+          trendUp: true,
+          isCurrency: true,
+        },
+        {
+          label: "Transactions",
+          value: data?.transactionsCount || 0,
+          icon: Activity,
+          color: "text-blue-400",
+          bg: "bg-blue-500/10",
+          trend: "",
+          trendUp: false,
+          isCurrency: false,
+        },
+        {
+          label: "Pending Docs",
+          value: 0,
+          icon: FileText,
+          color: "text-amber-400",
+          bg: "bg-amber-500/10",
+          trend: "",
+          trendUp: false,
+          isCurrency: false,
+        },
+      ];
+
+    case "ACCOUNTANT":
+      return [
+        {
+          label: "Total Revenue",
+          value: data?.totalRevenue || 0,
+          icon: DollarSign,
+          color: "text-emerald-400",
+          bg: "bg-emerald-500/10",
+          trend: "+12.5%",
+          trendUp: true,
+          isCurrency: true,
+        },
+        {
+          label: "Total Expenses",
+          value: data?.totalExpenses || 0,
+          icon: TrendingDown,
+          color: "text-red-400",
+          bg: "bg-red-500/10",
+          trend: "-3.2%",
+          trendUp: false,
+          isCurrency: true,
+        },
+        {
+          label: "Audit Alerts",
+          value: data?.unreadAlertCount || 0,
+          icon: ShieldAlert,
+          color: "text-amber-400",
+          bg: "bg-amber-500/10",
+          trend: "",
+          trendUp: false,
+          isCurrency: false,
+        },
+        {
+          label: "Transactions",
+          value: data?.transactionsCount || 0,
+          icon: Calculator,
+          color: "text-blue-400",
+          bg: "bg-blue-500/10",
+          trend: "",
+          trendUp: false,
+          isCurrency: false,
+        },
+      ];
+
+    case "CFO":
+      return [
+        {
+          label: "Net Profit",
+          value: data?.profit || 0,
+          icon: Crown,
+          color: "text-primary",
+          bg: "bg-primary/10",
+          trend: "+18.7%",
+          trendUp: true,
+          isCurrency: true,
+        },
+        {
+          label: "Cash Flow",
+          value: data?.cashFlow || 0,
+          icon: TrendingUp,
+          color: "text-emerald-400",
+          bg: "bg-emerald-500/10",
+          trend: "+8.3%",
+          trendUp: true,
+          isCurrency: true,
+        },
+        {
+          label: "Total Revenue",
+          value: data?.totalRevenue || 0,
+          icon: DollarSign,
+          color: "text-blue-400",
+          bg: "bg-blue-500/10",
+          trend: "+12.5%",
+          trendUp: true,
+          isCurrency: true,
+        },
+        {
+          label: "Risk Alerts",
+          value: data?.unreadAlertCount || 0,
+          icon: ShieldAlert,
+          color: "text-red-400",
+          bg: "bg-red-500/10",
+          trend: "",
+          trendUp: false,
+          isCurrency: false,
+        },
+      ];
+
+    case "MANAGER":
+      return [
+        {
+          label: "Dept. Budget Used",
+          value: data?.totalExpenses || 0,
+          icon: Target,
+          color: "text-purple-400",
+          bg: "bg-purple-500/10",
+          trend: "-5.2%",
+          trendUp: false,
+          isCurrency: true,
+        },
+        {
+          label: "Team Expenses",
+          value: data?.totalExpenses || 0,
+          icon: Users,
+          color: "text-red-400",
+          bg: "bg-red-500/10",
+          trend: "+2.1%",
+          trendUp: true,
+          isCurrency: true,
+        },
+        {
+          label: "Pending Approvals",
+          value: 0,
+          icon: Clock,
+          color: "text-amber-400",
+          bg: "bg-amber-500/10",
+          trend: "",
+          trendUp: false,
+          isCurrency: false,
+        },
+        {
+          label: "Approved This Month",
+          value: data?.transactionsCount || 0,
+          icon: CheckCircle,
+          color: "text-emerald-400",
+          bg: "bg-emerald-500/10",
+          trend: "",
+          trendUp: false,
+          isCurrency: false,
+        },
+      ];
+
+    case "INVESTOR":
+      return [
+        {
+          label: "Portfolio Value",
+          value: data?.totalRevenue || 0,
+          icon: PieChart,
+          color: "text-cyan-400",
+          bg: "bg-cyan-500/10",
+          trend: "+15.3%",
+          trendUp: true,
+          isCurrency: true,
+        },
+        {
+          label: "ROI",
+          value: data?.profit || 0,
+          icon: TrendingUp,
+          color: "text-emerald-400",
+          bg: "bg-emerald-500/10",
+          trend: "+22.1%",
+          trendUp: true,
+          isCurrency: true,
+        },
+        {
+          label: "Equity Position",
+          value: data?.cashFlow || 0,
+          icon: BarChart3,
+          color: "text-primary",
+          bg: "bg-primary/10",
+          trend: "+9.6%",
+          trendUp: true,
+          isCurrency: true,
+        },
+        {
+          label: "Active Alerts",
+          value: data?.unreadAlertCount || 0,
+          icon: ShieldAlert,
+          color: "text-amber-400",
+          bg: "bg-amber-500/10",
+          trend: "",
+          trendUp: false,
+          isCurrency: false,
+        },
+      ];
+
+    default:
+      return [];
+  }
+}
+
+const ROLE_TITLES: Record<string, { title: string; subtitle: string }> = {
+  EMPLOYEE: {
+    title: "My Dashboard",
+    subtitle: "Your personal expense and income overview",
+  },
+  ACCOUNTANT: {
+    title: "Accounting Dashboard",
+    subtitle: "Organization-wide books and compliance",
+  },
+  CFO: {
+    title: "Executive Dashboard",
+    subtitle: "Strategic financial overview and KPIs",
+  },
+  MANAGER: {
+    title: "Department Dashboard",
+    subtitle: "Budget oversight and team expenses",
+  },
+  INVESTOR: {
+    title: "Investor Dashboard",
+    subtitle: "Portfolio performance and equity tracking",
+  },
+};
+
 export default function DashboardPage() {
-  const { token } = useAuth();
+  const { user, token } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const role = user?.role || "EMPLOYEE";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -81,44 +346,8 @@ export default function DashboardPage() {
     fetchData();
   }, [token]);
 
-  const cards = [
-    {
-      label: "Total Revenue",
-      value: data?.totalRevenue || 0,
-      icon: DollarSign,
-      color: "text-emerald-400",
-      bg: "bg-emerald-500/10",
-      trend: "+12.5%",
-      trendUp: true,
-    },
-    {
-      label: "Total Expenses",
-      value: data?.totalExpenses || 0,
-      icon: TrendingDown,
-      color: "text-red-400",
-      bg: "bg-red-500/10",
-      trend: "-3.2%",
-      trendUp: false,
-    },
-    {
-      label: "Net Profit",
-      value: data?.profit || 0,
-      icon: TrendingUp,
-      color: "text-primary",
-      bg: "bg-primary/10",
-      trend: "+18.7%",
-      trendUp: true,
-    },
-    {
-      label: "Active Alerts",
-      value: data?.unreadAlertCount || 0,
-      icon: ShieldAlert,
-      color: "text-amber-400",
-      bg: "bg-amber-500/10",
-      trend: "",
-      trendUp: false,
-    },
-  ];
+  const cards = getCardsForRole(role, data);
+  const roleInfo = ROLE_TITLES[role] || ROLE_TITLES.EMPLOYEE;
 
   if (loading) {
     return (
@@ -131,10 +360,8 @@ export default function DashboardPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-foreground/50 text-sm mt-1">
-          Financial overview and analytics
-        </p>
+        <h1 className="text-2xl font-bold text-foreground">{roleInfo.title}</h1>
+        <p className="text-foreground/50 text-sm mt-1">{roleInfo.subtitle}</p>
       </div>
 
       {/* Stat Cards */}
@@ -153,9 +380,9 @@ export default function DashboardPage() {
               </div>
             </div>
             <p className="text-2xl font-bold text-foreground">
-              {card.label === "Active Alerts"
-                ? card.value
-                : `$${card.value.toLocaleString()}`}
+              {card.isCurrency
+                ? `$${card.value.toLocaleString()}`
+                : card.value}
             </p>
             {card.trend && (
               <div
@@ -178,7 +405,11 @@ export default function DashboardPage() {
         {/* Cash Flow Chart */}
         <div className="lg:col-span-2 bg-[#0a0a0a] border border-white/[0.06] rounded-2xl p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">
-            Cash Flow
+            {role === "INVESTOR"
+              ? "Portfolio Performance"
+              : role === "MANAGER"
+                ? "Department Spend"
+                : "Cash Flow"}
           </h2>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -239,7 +470,7 @@ export default function DashboardPage() {
         {/* Recent Transactions */}
         <div className="bg-[#0a0a0a] border border-white/[0.06] rounded-2xl p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">
-            Recent Transactions
+            {role === "INVESTOR" ? "Recent Activity" : "Recent Transactions"}
           </h2>
           {transactions.length === 0 ? (
             <p className="text-foreground/40 text-sm">

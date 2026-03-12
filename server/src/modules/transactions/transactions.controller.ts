@@ -16,7 +16,7 @@ export class TransactionsController {
 
     getTransactions = catchAsync(async (req: Request, res: Response) => {
         const { organizationId } = req.query;
-        const userId = req.user.role === 'SUPER_ADMIN' ? undefined : req.user.id;
+        const userId = req.user.role === 'CFO' ? undefined : req.user.id;
         const transactions = await this.txService.getTransactions(organizationId as string, userId);
         res.status(200).json({ status: 'success', data: { transactions } });
     });
