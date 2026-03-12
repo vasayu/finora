@@ -1,10 +1,58 @@
+import { prisma } from '../../config/database';
 import { TransactionsRepository } from './transactions.repository';
+import ExcelJS, { Row } from 'exceljs';
 
 export class TransactionsService {
     private repository: TransactionsRepository;
 
     constructor() {
         this.repository = new TransactionsRepository();
+    }
+
+    private async evaluateExpenseAlert(userId: string, organizationId?: string) {
+        const txWhere: any = organizationId ? { organizationId } : { userId };
+        const allTx = await prisma.transaction.findMany({ where: txWhere });
+        
+        let totalIncome = 0;
+        let totalExpense = 0;
+        
+        for (const tx of allTx) {
+            if (tx.type === 'INCOME') totalIncome += tx.amount;
+            if (tx.type === 'EXPENSE') totalExpense += tx.amount;
+        }
+
+        const isHighExpense = totalIncome > 0 && totalExpense > (0.5 * totalIncome);
+
+        if (isHighExpense) {
+            const existingAlert = await prisma.alert.findFirst({
+                where: { 
+                    userId, 
+                    type: 'HIGH_EXPENSE',
+                    createdAt: {
+                        gte: new Date(new Date().setHours(0, 0, 0, 0)) // only 1 per day max
+                    }
+                }
+            });
+
+            if (!existingAlert) {
+                const percentage = Math.round((totalExpense / totalIncome) * 100);
+                await prisma.alert.create({
+                    data: {
+                        userId,
+                        type: 'HIGH_EXPENSE',
+                        message: `Warning: Your expenses (${percentage}%) have exceeded 50% of your total income.`,
+                    }
+                });
+            }
+        } else {
+            // Expenses are normal, clear any existing HIGH_EXPENSE alerts for the user
+            await prisma.alert.deleteMany({
+                where: { 
+                    userId, 
+                    type: 'HIGH_EXPENSE' 
+                }
+            });
+        }
     }
 
     async createTransaction(userId: string, data: any) {
@@ -19,6 +67,8 @@ export class TransactionsService {
             ...(data.organizationId && { organization: { connect: { id: data.organizationId } } })
         });
 
+        await this.evaluateExpenseAlert(userId, data.organizationId);
+
         return transaction;
     }
 
@@ -28,5 +78,152 @@ export class TransactionsService {
 
     async getTransactions(organizationId?: string, userId?: string) {
         return this.repository.findAll(organizationId, userId);
+    }
+
+    async updateTransaction(id: string, userId: string, data: any) {
+        const tx = await this.repository.findById(id);
+        if (!tx) throw new Error("Transaction not found");
+        if (tx.userId !== userId && tx.organizationId !== data.organizationId) {
+            throw new Error("Unauthorized to edit this transaction");
+        }
+
+        const updatedTx = await this.repository.updateTransaction(id, {
+            amount: data.amount,
+            currency: data.currency,
+            type: data.type,
+            category: data.category,
+            description: data.description,
+            ...(data.date && { date: new Date(data.date) })
+        });
+
+        await this.evaluateExpenseAlert(tx.userId, tx.organizationId || undefined);
+        return updatedTx;
+    }
+
+    async deleteTransaction(id: string, userId: string, role?: string) {
+        const tx = await this.repository.findById(id);
+        if (!tx) throw new Error("Transaction not found");
+        if (tx.userId !== userId && role !== 'CFO' && role !== 'ACCOUNTANT') {
+            throw new Error("Unauthorized to delete this transaction");
+        }
+        
+        const deletedTx = await this.repository.deleteTransaction(id);
+        await this.evaluateExpenseAlert(tx.userId, tx.organizationId || undefined);
+        return deletedTx;
+    }
+
+    async generateTemplate() {
+        const workbook = new ExcelJS.Workbook();
+        const sheet = workbook.addWorksheet('Transactions Template');
+
+        sheet.columns = [
+            { header: 'Date (YYYY-MM-DD)', key: 'date', width: 20 },
+            { header: 'Amount', key: 'amount', width: 15 },
+            { header: 'Type (INCOME/EXPENSE)', key: 'type', width: 25 },
+            { header: 'Category', key: 'category', width: 25 },
+            { header: 'Description', key: 'description', width: 40 }
+        ];
+
+        // Style the header
+        sheet.getRow(1).font = { bold: true };
+        sheet.getRow(1).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFE0E0E0' }
+        };
+
+        // Add a sample row to guide the user
+        sheet.addRow({
+            date: new Date().toISOString().split('T')[0],
+            amount: 1500,
+            type: 'EXPENSE',
+            category: 'Marketing',
+            description: 'Monthly ad spend'
+        });
+
+        // Add data validation to the Type column
+        for (let i = 2; i <= 1000; i++) {
+            sheet.getCell(`C${i}`).dataValidation = {
+                type: 'list',
+                allowBlank: false,
+                formulae: ['"INCOME,EXPENSE"']
+            };
+        }
+
+        return workbook;
+    }
+
+    async importTransactions(userId: string, fileBuffer: any, organizationId?: string) {
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(fileBuffer);
+        const sheet = workbook.worksheets[0];
+
+        if (!sheet) throw new Error("Excel file has no worksheets");
+
+        const transactionsData: any[] = [];
+        let rowCount = 0;
+
+        // Start reading from row 2 (skipping header)
+        sheet.eachRow((row: Row, rowNumber: number) => {
+            if (rowNumber === 1) return; // Skip header
+
+            const dateVal = row.getCell(1).value;
+            const amountVal = row.getCell(2).value;
+            const typeVal = row.getCell(3).value?.toString().toUpperCase();
+            const categoryVal = row.getCell(4).value?.toString() || 'General';
+            const descriptionVal = row.getCell(5).value?.toString() || '';
+
+            // Skip empty rows
+            if (!dateVal && !amountVal && !typeVal) return;
+
+            // Validate basic required fields for the row
+            if (!amountVal || isNaN(Number(amountVal))) {
+                throw new Error(`Row ${rowNumber}: Invalid amount "${amountVal}"`);
+            }
+            if (typeVal !== 'INCOME' && typeVal !== 'EXPENSE') {
+                throw new Error(`Row ${rowNumber}: Type must be INCOME or EXPENSE`);
+            }
+
+            let parsedDate = new Date();
+            if (dateVal) {
+                // Handle native excel dates or strings
+                parsedDate = dateVal instanceof Date ? dateVal : new Date(dateVal.toString());
+                if (isNaN(parsedDate.getTime())) {
+                     throw new Error(`Row ${rowNumber}: Invalid date format`);
+                }
+            }
+
+            transactionsData.push({
+                userId,
+                organizationId: organizationId || null,
+                amount: Number(amountVal),
+                currency: 'USD',
+                type: typeVal,
+                category: categoryVal.trim(),
+                description: descriptionVal.trim(),
+                date: parsedDate,
+            });
+            rowCount++;
+        });
+
+        if (transactionsData.length === 0) {
+            throw new Error("No valid transactions found in the file.");
+        }
+
+        // Bulk insert locally using Prisma transactional boundaries
+        const result = await prisma.$transaction(async (tx) => {
+            return await tx.transaction.createMany({
+                data: transactionsData,
+                skipDuplicates: false, // Or true depending on your preference
+            });
+        });
+
+        // Trigger the alerts check now that the transactions are in
+        await this.evaluateExpenseAlert(userId, organizationId);
+
+        return {
+            importedCount: result.count,
+            message: `Successfully imported ${result.count} transactions.`
+        };
     }
 }

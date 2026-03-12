@@ -20,4 +20,8 @@ export class TransactionsRepository {
     async deleteTransaction(id: string) {
         return prisma.transaction.delete({ where: { id } });
     }
+
+    async updateTransaction(id: string, data: Prisma.TransactionUpdateInput) {
+        return prisma.transaction.update({ where: { id }, data });
+    }
 }
