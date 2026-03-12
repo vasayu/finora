@@ -5,11 +5,13 @@ import { AgGridReact } from "ag-grid-react";
 import { themeBalham } from "ag-grid-community";
 import "ag-grid-community/styles/ag-grid.css";
 import { useTerminalStore } from "@/lib/store/terminalStore";
+import { useAuth } from "@/Components/AuthProvider";
 import { api } from "@/lib/api";
 import { Table, ServerCrash } from "lucide-react";
 
 export default function BottomPanel() {
   const { selectedSymbol } = useTerminalStore();
+  const { token } = useAuth();
   const [rowData, setRowData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -22,7 +24,7 @@ export default function BottomPanel() {
       try {
         // To keep the demo fast, we'll fetch the same generic balance sheet we built earlier
         // In a real scenario, this would take `?symbol=${selectedSymbol}`
-        const res = await api("/financials/balance-sheet");
+        const res = await api("/financials/balance-sheet", { token });
         if (isMounted && res.data?.detailed) {
           // Flatten out the detailed response for community grid display
           const flatData: any[] = [];
@@ -59,7 +61,7 @@ export default function BottomPanel() {
     return () => {
       isMounted = false;
     };
-  }, [selectedSymbol]);
+  }, [selectedSymbol, token]);
 
   const colDefs = useMemo<any[]>(
     () => [

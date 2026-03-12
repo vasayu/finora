@@ -1,4 +1,24 @@
 import { prisma } from '../../config/database';
+import { CHART_OF_ACCOUNTS, classifyTransaction, BSSection } from './chart-of-accounts';
+import ExcelJS from 'exceljs';
+
+export interface BSRow {
+    section: string;
+    subSection: string;
+    account: string;
+    balance: number;
+    isSubtotal?: boolean;
+    isTotal?: boolean;
+}
+
+export interface BalanceSheetResult {
+    rows: BSRow[];
+    totalAssets: number;
+    totalLiabilities: number;
+    totalEquity: number;
+    balanced: boolean; // A = L + E
+    asOfDate: string;
+}
 
 export class FinancialsService {
     async getPnL(userId: string, organizationId?: string, startDate?: string, endDate?: string) {
@@ -34,67 +54,375 @@ export class FinancialsService {
         };
     }
 
-    async getBalanceSheet(userId: string, organizationId?: string) {
-        // Base numbers for realistic scaling
-        let baseAssets = 0;
-        let baseLiabilities = 0;
-        let baseEquity = 0;
+    /**
+     * Dynamic, transaction-driven Balance Sheet.
+     */
+    async getBalanceSheet(userId: string, organizationId?: string, asOfDate?: string): Promise<BalanceSheetResult> {
+        const dateLimit = asOfDate ? new Date(asOfDate) : new Date();
+        // Set to end of day
+        dateLimit.setHours(23, 59, 59, 999);
 
-        if (organizationId) {
-            const latestRecord = await prisma.financialRecord.findFirst({
-                where: { organizationId },
-                orderBy: [{ year: 'desc' }, { month: 'desc' }]
-            });
+        const where: any = organizationId
+            ? { organizationId, date: { lte: dateLimit } }
+            : { userId, date: { lte: dateLimit } };
 
-            if (latestRecord) {
-                baseAssets = latestRecord.assets || 250000;
-                baseLiabilities = latestRecord.liabilities || 100000;
-                baseEquity = latestRecord.equity || 150000;
+        const transactions = await prisma.transaction.findMany({ where });
+
+        // ── Aggregate balances ──────────────────────────────────────
+        // Initialize all accounts to 0
+        const balances: Record<string, number> = {};
+        for (const item of CHART_OF_ACCOUNTS) {
+            balances[item.account] = 0;
+        }
+
+        let totalIncome = 0;
+        let totalExpense = 0;
+
+        for (const tx of transactions) {
+            if (tx.type === 'INCOME') {
+                totalIncome += tx.amount;
+                // Income: map category to asset account (e.g. Accounts Receivable)
+                const account = classifyTransaction(tx.category, 'INCOME');
+                if (account === 'Cash & Cash Equivalents') {
+                    // Direct cash income
+                    balances['Cash & Cash Equivalents'] = (balances['Cash & Cash Equivalents'] || 0) + tx.amount;
+                } else {
+                    // Income mapped to a specific asset account (e.g. AR)
+                    balances[account] = (balances[account] || 0) + tx.amount;
+                }
+            } else {
+                // EXPENSE
+                totalExpense += tx.amount;
+                const account = classifyTransaction(tx.category, 'EXPENSE');
+
+                if (account === 'Cash & Cash Equivalents') {
+                    // Unmapped expense: reduces cash directly
+                    balances['Cash & Cash Equivalents'] = (balances['Cash & Cash Equivalents'] || 0) - tx.amount;
+                } else {
+                    // Mapped expense: the target account (e.g. AP, Accrued) increases as a liability
+                    // and cash decreases
+                    const targetItem = CHART_OF_ACCOUNTS.find(i => i.account === account);
+                    if (targetItem && targetItem.section === 'ASSETS') {
+                        // Asset purchase: increase that asset, decrease cash
+                        balances[account] = (balances[account] || 0) + tx.amount;
+                        balances['Cash & Cash Equivalents'] = (balances['Cash & Cash Equivalents'] || 0) - tx.amount;
+                    } else if (targetItem && targetItem.section === 'LIABILITIES') {
+                        // Liability expense: increase liability (e.g. AP, Salaries Payable)
+                        // In a simplified model we assume the expense is paid, so cash decreases
+                        balances[account] = (balances[account] || 0) + tx.amount;
+                        balances['Cash & Cash Equivalents'] = (balances['Cash & Cash Equivalents'] || 0) - tx.amount;
+                    } else {
+                        // Fallback
+                        balances['Cash & Cash Equivalents'] = (balances['Cash & Cash Equivalents'] || 0) - tx.amount;
+                    }
+                }
             }
         }
 
-        if (baseAssets === 0) {
-            const transactions = await prisma.transaction.findMany({ where: { userId } });
-            let totalIncome = 0;
-            let totalExpense = 0;
+        // Retained Earnings = cumulative net income
+        const netIncome = totalIncome - totalExpense;
+        balances['Retained Earnings'] = netIncome;
 
-            transactions.forEach((tx) => {
-                if (tx.type === 'INCOME') totalIncome += tx.amount;
-                if (tx.type === 'EXPENSE') totalExpense += tx.amount;
+        // ── Build output rows ────────────────────────────────────────
+        const rows: BSRow[] = [];
+        const sections: BSSection[] = ['ASSETS', 'LIABILITIES', 'EQUITY'];
+
+        let totalAssets = 0;
+        let totalLiabilities = 0;
+        let totalEquity = 0;
+
+        for (const section of sections) {
+            const sectionItems = CHART_OF_ACCOUNTS.filter(i => i.section === section);
+            const subSections = [...new Set(sectionItems.map(i => i.subSection))];
+            let sectionTotal = 0;
+
+            for (const sub of subSections) {
+                const subItems = sectionItems.filter(i => i.subSection === sub);
+                let subTotal = 0;
+
+                for (const item of subItems) {
+                    const bal = balances[item.account] || 0;
+                    subTotal += bal;
+                    rows.push({
+                        section,
+                        subSection: sub,
+                        account: item.account,
+                        balance: Math.round(bal * 100) / 100,
+                    });
+                }
+
+                rows.push({
+                    section,
+                    subSection: sub,
+                    account: `Total ${sub}`,
+                    balance: Math.round(subTotal * 100) / 100,
+                    isSubtotal: true,
+                });
+
+                sectionTotal += subTotal;
+            }
+
+            rows.push({
+                section,
+                subSection: '',
+                account: `TOTAL ${section}`,
+                balance: Math.round(sectionTotal * 100) / 100,
+                isTotal: true,
             });
 
-            // Fallback generation based on transaction volume to make it look realistic
-            // Minimum baseline if user has no transactions
-            const scaler = Math.max(totalIncome, 50000);
-            baseAssets = scaler * 2.5;
-            baseLiabilities = scaler * 1.2;
-            baseEquity = baseAssets - baseLiabilities;
+            if (section === 'ASSETS') totalAssets = sectionTotal;
+            if (section === 'LIABILITIES') totalLiabilities = sectionTotal;
+            if (section === 'EQUITY') totalEquity = sectionTotal;
         }
 
-        // Generate detailed hierarchy for AG Grid
-        // A realistic mapping:
-        // Cash: 40% of Assets
-        // AR: 25% of Assets
-        // Inventory: 15% of Assets
-        // PPE: 20% of Assets
-        // AP: 40% of Liab
-        // Short-Term Debt: 20% of Liab
-        // Long-Term Debt: 40% of Liab
+        totalAssets = Math.round(totalAssets * 100) / 100;
+        totalLiabilities = Math.round(totalLiabilities * 100) / 100;
+        totalEquity = Math.round(totalEquity * 100) / 100;
 
-        const gridData = [
-            { mainCategory: "Assets", subCategory: "Current Assets", account: "Cash and Cash Equivalents", balance: baseAssets * 0.4 },
-            { mainCategory: "Assets", subCategory: "Current Assets", account: "Accounts Receivable", balance: baseAssets * 0.25 },
-            { mainCategory: "Assets", subCategory: "Current Assets", account: "Inventory", balance: baseAssets * 0.15 },
-            { mainCategory: "Assets", subCategory: "Fixed Assets", account: "Property, Plant & Equipment", balance: baseAssets * 0.2 },
+        return {
+            rows,
+            totalAssets,
+            totalLiabilities,
+            totalEquity,
+            balanced: Math.abs(totalAssets - (totalLiabilities + totalEquity)) < 0.01,
+            asOfDate: dateLimit.toISOString().split('T')[0],
+        };
+    }
 
-            { mainCategory: "Liabilities", subCategory: "Current Liabilities", account: "Accounts Payable", balance: baseLiabilities * 0.4 },
-            { mainCategory: "Liabilities", subCategory: "Current Liabilities", account: "Short-Term Debt", balance: baseLiabilities * 0.2 },
-            { mainCategory: "Liabilities", subCategory: "Long-Term Liabilities", account: "Long-Term Debt", balance: baseLiabilities * 0.4 },
+    /**
+     * Generate an Excel workbook with:
+     * 1. Transactions sheet (raw data)
+     * 2. Balance Sheet sheet (with SUMIFS formulas)
+     */
+    async exportBalanceSheetExcel(userId: string, organizationId?: string, asOfDate?: string): Promise<ExcelJS.Workbook> {
+        const dateLimit = asOfDate ? new Date(asOfDate) : new Date();
+        dateLimit.setHours(23, 59, 59, 999);
 
-            { mainCategory: "Equity", subCategory: "Shareholders' Equity", account: "Retained Earnings", balance: baseEquity * 0.7 },
-            { mainCategory: "Equity", subCategory: "Shareholders' Equity", account: "Common Stock", balance: baseEquity * 0.3 },
+        const where: any = organizationId
+            ? { organizationId, date: { lte: dateLimit } }
+            : { userId, date: { lte: dateLimit } };
+
+        const transactions = await prisma.transaction.findMany({
+            where,
+            orderBy: { date: 'asc' }
+        });
+
+        const wb = new ExcelJS.Workbook();
+        wb.creator = 'Finora';
+        wb.created = new Date();
+
+        // ────────────────────────────────────────────────────────────
+        // SHEET 1: Transactions
+        // ────────────────────────────────────────────────────────────
+        const txSheet = wb.addWorksheet('Transactions');
+        txSheet.columns = [
+            { header: 'Date', key: 'date', width: 14 },
+            { header: 'Type', key: 'type', width: 10 },
+            { header: 'Category', key: 'category', width: 22 },
+            { header: 'Description', key: 'description', width: 35 },
+            { header: 'Amount', key: 'amount', width: 16 },
+            { header: 'BS Account', key: 'bsAccount', width: 28 },
         ];
 
-        return gridData;
+        // Header styling
+        txSheet.getRow(1).eachCell(cell => {
+            cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F4E79' } };
+            cell.alignment = { horizontal: 'center' };
+        });
+
+        for (const tx of transactions) {
+            const bsAccount = classifyTransaction(tx.category, tx.type as 'INCOME' | 'EXPENSE');
+            txSheet.addRow({
+                date: tx.date,
+                type: tx.type,
+                category: tx.category,
+                description: tx.description || '',
+                amount: tx.amount,
+                bsAccount,
+            });
+        }
+
+        // Format amount column
+        txSheet.getColumn('amount').numFmt = '₹#,##0.00';
+        txSheet.getColumn('date').numFmt = 'DD-MMM-YYYY';
+
+        // ────────────────────────────────────────────────────────────
+        // SHEET 2: Balance Sheet (with SUMIFS formulas)
+        // ────────────────────────────────────────────────────────────
+        const bsSheet = wb.addWorksheet('Balance Sheet');
+        bsSheet.getColumn(1).width = 5;   // Indentation
+        bsSheet.getColumn(2).width = 38;  // Account name
+        bsSheet.getColumn(3).width = 22;  // Amount
+
+        const txCount = transactions.length;
+        const dateCol = 'Transactions!$A$2:$A$' + (txCount + 1);
+        const amtCol = 'Transactions!$E$2:$E$' + (txCount + 1);
+        const typeCol = 'Transactions!$B$2:$B$' + (txCount + 1);
+        const bsAcctCol = 'Transactions!$F$2:$F$' + (txCount + 1);
+
+        // ── Control Panel ────────────────────────────────────────
+        const r1 = bsSheet.addRow(['', 'BALANCE SHEET', '']);
+        r1.getCell(2).font = { bold: true, size: 16 };
+        r1.getCell(2).alignment = { horizontal: 'center' };
+        bsSheet.mergeCells('B1:C1');
+
+        const r2 = bsSheet.addRow(['', 'As-Of Date:', dateLimit]);
+        r2.getCell(2).font = { bold: true, color: { argb: 'FF1F4E79' } };
+        r2.getCell(3).numFmt = 'DD-MMM-YYYY';
+        r2.getCell(3).font = { bold: true, color: { argb: 'FF0000FF' } };
+        r2.getCell(3).fill = {
+            type: 'pattern', pattern: 'solid',
+            fgColor: { argb: 'FFFFFF00' }
+        };
+        // Name the date cell for formula reference
+        const asOfDateCell = 'C2';
+
+        bsSheet.addRow([]); // Spacer
+
+        // Currency format
+        const currFmt = '₹#,##0.00;(₹#,##0.00)';
+        let currentRow = 4;
+
+        // Helper to add a section
+        const addSectionHeader = (title: string) => {
+            const row = bsSheet.addRow(['', title, '']);
+            row.getCell(2).font = { bold: true, size: 13 };
+            row.getCell(2).fill = {
+                type: 'pattern', pattern: 'solid',
+                fgColor: { argb: 'FFD9E2F3' }
+            };
+            row.getCell(3).fill = {
+                type: 'pattern', pattern: 'solid',
+                fgColor: { argb: 'FFD9E2F3' }
+            };
+            currentRow++;
+        };
+
+        const addSubSectionHeader = (title: string) => {
+            const row = bsSheet.addRow(['', `  ${title}`, '']);
+            row.getCell(2).font = { bold: true, italic: true, size: 11 };
+            currentRow++;
+        };
+
+        const lineItemRows: Record<string, number> = {}; // track row numbers for subtotals
+
+        const addLineItem = (account: string, section: BSSection) => {
+            const row = bsSheet.addRow(['', `    ${account}`, null]);
+            const cellRef = `C${currentRow}`;
+            lineItemRows[account] = currentRow;
+
+            // Build SUMIFS formula
+            if (account === 'Cash & Cash Equivalents') {
+                // Cash = all INCOME - all EXPENSE where BS Account = "Cash & Cash Equivalents"
+                // + specific mapped income (direct cash) - specific mapped expense
+                // Simplified: SUMIFS for income mapped to cash - SUMIFS for expense mapped to cash
+                // + unmatched income - unmatched expense
+                row.getCell(3).value = {
+                    formula: `SUMIFS(${amtCol},${typeCol},"INCOME",${bsAcctCol},"Cash & Cash Equivalents")-SUMIFS(${amtCol},${typeCol},"EXPENSE",${bsAcctCol},"Cash & Cash Equivalents")-SUMIFS(${amtCol},${typeCol},"EXPENSE",${bsAcctCol},"Property, Plant & Equipment")-SUMIFS(${amtCol},${typeCol},"EXPENSE",${bsAcctCol},"Intangible Assets")-SUMIFS(${amtCol},${typeCol},"EXPENSE",${bsAcctCol},"Inventory")-SUMIFS(${amtCol},${typeCol},"EXPENSE",${bsAcctCol},"Prepaid Expenses")`,
+                    result: undefined
+                };
+            } else if (account === 'Retained Earnings') {
+                // Net Income = Total Income - Total Expense
+                row.getCell(3).value = {
+                    formula: `SUMIFS(${amtCol},${typeCol},"INCOME")-SUMIFS(${amtCol},${typeCol},"EXPENSE")`,
+                    result: undefined
+                };
+            } else {
+                // Standard: SUMIFS on BS Account column
+                row.getCell(3).value = {
+                    formula: `SUMIFS(${amtCol},${bsAcctCol},"${account}")`,
+                    result: undefined
+                };
+            }
+
+            row.getCell(3).numFmt = currFmt;
+            row.getCell(3).font = { color: { argb: 'FF008000' } }; // Green for formula cells
+            currentRow++;
+
+            return cellRef;
+        };
+
+        const addSubtotalRow = (label: string, startRow: number, endRow: number) => {
+            const row = bsSheet.addRow(['', `  ${label}`, null]);
+            row.getCell(3).value = {
+                formula: `SUM(C${startRow}:C${endRow})`,
+                result: undefined
+            };
+            row.getCell(2).font = { bold: true };
+            row.getCell(3).font = { bold: true };
+            row.getCell(3).numFmt = currFmt;
+            row.getCell(3).border = { top: { style: 'thin' } };
+            const ref = `C${currentRow}`;
+            currentRow++;
+            return ref;
+        };
+
+        const addTotalRow = (label: string, subtotalRefs: string[]) => {
+            const row = bsSheet.addRow(['', label, null]);
+            row.getCell(3).value = {
+                formula: subtotalRefs.join('+'),
+                result: undefined
+            };
+            row.getCell(2).font = { bold: true, size: 12 };
+            row.getCell(3).font = { bold: true, size: 12 };
+            row.getCell(3).numFmt = currFmt;
+            row.getCell(3).border = {
+                top: { style: 'double' },
+                bottom: { style: 'double' },
+            };
+            const ref = `C${currentRow}`;
+            currentRow++;
+            return ref;
+        };
+
+        // ── BUILD SECTIONS ───────────────────────────────────────
+        const sections: BSSection[] = ['ASSETS', 'LIABILITIES', 'EQUITY'];
+        const sectionTotalRefs: Record<BSSection, string> = {} as any;
+
+        for (const section of sections) {
+            addSectionHeader(section);
+            const sectionItems = CHART_OF_ACCOUNTS.filter(i => i.section === section);
+            const subSections = [...new Set(sectionItems.map(i => i.subSection))];
+            const subTotalRefs: string[] = [];
+
+            for (const sub of subSections) {
+                addSubSectionHeader(sub);
+                const subItems = sectionItems.filter(i => i.subSection === sub);
+                const startRow = currentRow;
+
+                for (const item of subItems) {
+                    addLineItem(item.account, section);
+                }
+
+                const endRow = currentRow - 1;
+                const stRef = addSubtotalRow(`Total ${sub}`, startRow, endRow);
+                subTotalRefs.push(stRef);
+
+                bsSheet.addRow([]); // spacer
+                currentRow++;
+            }
+
+            const totalRef = addTotalRow(`TOTAL ${section}`, subTotalRefs);
+            sectionTotalRefs[section] = totalRef;
+
+            bsSheet.addRow([]); // spacer
+            currentRow++;
+        }
+
+        // ── Balance Check Row ────────────────────────────────────
+        bsSheet.addRow([]); currentRow++;
+        const checkRow = bsSheet.addRow(['', 'Balance Check (A - L - E)', null]);
+        checkRow.getCell(3).value = {
+            formula: `${sectionTotalRefs['ASSETS']}-${sectionTotalRefs['LIABILITIES']}-${sectionTotalRefs['EQUITY']}`,
+            result: undefined
+        };
+        checkRow.getCell(2).font = { bold: true, italic: true };
+        checkRow.getCell(3).font = { bold: true };
+        checkRow.getCell(3).numFmt = currFmt;
+        // Conditional: should be 0 if balanced
+        currentRow++;
+
+        return wb;
     }
 }

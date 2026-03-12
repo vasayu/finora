@@ -20,6 +20,7 @@ model User {
   documents      Document[]
   transactions   Transaction[]
   auditTrails    AuditTrail[]
+  watchlist      Watchlist[]
 
   // Role-specific profiles (only one will be populated based on role)
   employeeProfile   EmployeeProfile?
@@ -40,6 +41,7 @@ model Organization {
   users        User[]
   documents    Document[]
   transactions Transaction[]
+  orgWatchlist  OrgWatchlist[]
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 }
@@ -192,4 +194,29 @@ model AuditTrail {
   user      User         @relation(fields: [userId], references: [id])
   details   Json?
   createdAt DateTime     @default(now())
+}
+
+// ─── Watchlist Models ─────────────────────────────────────────────
+
+model Watchlist {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  symbol    String
+  name      String
+  addedAt   DateTime @default(now())
+
+  @@unique([userId, symbol])
+}
+
+model OrgWatchlist {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  symbol         String
+  name           String
+  addedByUserId  String
+  addedAt        DateTime     @default(now())
+
+  @@unique([organizationId, symbol])
 }

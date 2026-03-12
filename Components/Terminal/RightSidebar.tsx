@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useTerminalStore } from "@/lib/store/terminalStore";
+import { useAuth } from "@/Components/AuthProvider";
 import {
   Brain,
   Target,
@@ -22,6 +23,7 @@ export default function RightSidebar() {
     predictionData,
     setPredictionData,
   } = useTerminalStore();
+  const { token } = useAuth();
   const [loading, setLoading] = useState(false);
 
   // Fetch AI prediction when symbol or timeframe changes
@@ -37,6 +39,7 @@ export default function RightSidebar() {
         // (Assuming terminal is wrapped in AuthProvider at root)
         const res = await api("/stocks/predict", {
           method: "POST",
+          token,
           body: {
             symbol: selectedSymbol,
             currentPrice: currentStockData.price,
@@ -64,6 +67,7 @@ export default function RightSidebar() {
     selectedTimeframe,
     currentStockData?.price,
     setPredictionData,
+    token,
   ]);
 
   const isBull = predictionData?.trend === "bullish";

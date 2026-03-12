@@ -10,6 +10,13 @@ export interface StockInfo {
     volume: number;
 }
 
+export interface WatchlistItem {
+    id: string;
+    symbol: string;
+    name: string;
+    addedAt: string;
+}
+
 export interface AIPrediction {
     targetPrice: number;
     confidence: number;
@@ -28,38 +35,39 @@ interface TerminalState {
     currentStockData: StockInfo | null;
     predictionData: AIPrediction | null;
 
-    // Watchlist
-    watchlist: StockInfo[];
+    // Watchlists (hydrated from API)
+    watchlist: WatchlistItem[];
+    orgWatchlist: WatchlistItem[];
 
     // Actions
     setSymbol: (symbol: string) => void;
     setTimeframe: (tf: Timeframe) => void;
     updateStockData: (data: Partial<StockInfo>) => void;
     setPredictionData: (data: AIPrediction) => void;
-    addToWatchlist: (stock: StockInfo) => void;
+    setWatchlist: (items: WatchlistItem[]) => void;
+    setOrgWatchlist: (items: WatchlistItem[]) => void;
+    addToWatchlist: (item: WatchlistItem) => void;
     removeFromWatchlist: (symbol: string) => void;
+    addToOrgWatchlist: (item: WatchlistItem) => void;
+    removeFromOrgWatchlist: (symbol: string) => void;
 }
 
 export const useTerminalStore = create<TerminalState>((set) => ({
-    selectedSymbol: 'AAPL', // Default stock
+    selectedSymbol: 'RELIANCE',
     selectedTimeframe: '1D',
 
     currentStockData: {
-        symbol: 'AAPL',
-        name: 'Apple Inc.',
-        price: 173.50,
+        symbol: 'RELIANCE',
+        name: 'Reliance Industries Ltd.',
+        price: 2450.75,
         changePercent: 1.25,
-        volume: 54300000,
+        volume: 12500000,
     },
 
     predictionData: null,
 
-    watchlist: [
-        { symbol: 'AAPL', name: 'Apple Inc.', price: 173.50, changePercent: 1.25, volume: 54300000 },
-        { symbol: 'MSFT', name: 'Microsoft Corp.', price: 405.12, changePercent: -0.45, volume: 22100000 },
-        { symbol: 'NVDA', name: 'NVIDIA Corporation', price: 875.28, changePercent: 4.30, volume: 46100000 },
-        { symbol: 'TSLA', name: 'Tesla Inc.', price: 175.34, changePercent: -2.10, volume: 102000000 },
-    ],
+    watchlist: [],
+    orgWatchlist: [],
 
     setSymbol: (symbol) => set({ selectedSymbol: symbol }),
 
@@ -71,14 +79,27 @@ export const useTerminalStore = create<TerminalState>((set) => ({
 
     setPredictionData: (data) => set({ predictionData: data }),
 
-    addToWatchlist: (stock) => set((state) => ({
-        // Prevent duplicates
-        watchlist: state.watchlist.some(s => s.symbol === stock.symbol)
+    setWatchlist: (items) => set({ watchlist: items }),
+
+    setOrgWatchlist: (items) => set({ orgWatchlist: items }),
+
+    addToWatchlist: (item) => set((state) => ({
+        watchlist: state.watchlist.some(s => s.symbol === item.symbol)
             ? state.watchlist
-            : [...state.watchlist, stock]
+            : [item, ...state.watchlist]
     })),
 
     removeFromWatchlist: (symbol) => set((state) => ({
         watchlist: state.watchlist.filter(s => s.symbol !== symbol)
+    })),
+
+    addToOrgWatchlist: (item) => set((state) => ({
+        orgWatchlist: state.orgWatchlist.some(s => s.symbol === item.symbol)
+            ? state.orgWatchlist
+            : [item, ...state.orgWatchlist]
+    })),
+
+    removeFromOrgWatchlist: (symbol) => set((state) => ({
+        orgWatchlist: state.orgWatchlist.filter(s => s.symbol !== symbol)
     })),
 }));

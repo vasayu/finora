@@ -67,9 +67,9 @@ const ALL_NAV_ITEMS = [
   { label: "Transactions", href: "/transactions", icon: ArrowLeftRight, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER"] },
   { label: "Documents", href: "/documents", icon: FileText, roles: ["ACCOUNTANT", "CFO", "MANAGER", "EMPLOYEE"] },
   { label: "Alerts", href: "/alerts", icon: ShieldAlert, roles: ["ACCOUNTANT", "CFO", "MANAGER"] },
-  { label: "P&L Report", href: "/reports/pnl", icon: TrendingUp, roles: ["ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
-  { label: "Balance Sheet", href: "/reports/balance-sheet", icon: Scale, roles: ["ACCOUNTANT", "CFO", "INVESTOR"] },
-  { label: "Trading Terminal", href: "/terminal", icon: Activity, roles: ["CFO", "INVESTOR"] },
+  { label: "P&L Report", href: "/reports/pnl", icon: TrendingUp, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
+  { label: "Balance Sheet", href: "/reports/balance-sheet", icon: Scale, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
+  { label: "Trading Terminal", href: "/terminal", icon: Activity, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
   { label: "AI Assistant", href: "/ai", icon: Bot, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
   { label: "Organization", href: "/organization", icon: Building2, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
   { label: "Profile", href: "/profile", icon: User, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
@@ -88,8 +88,6 @@ export default function Sidebar() {
 
   const navItems = ALL_NAV_ITEMS.filter((item) => {
     if (!item.roles.includes(user?.role || "EMPLOYEE")) return false;
-    // If user has no org, only show the Organization page
-    if (!user?.organizationId && item.href !== "/organization") return false;
     return true;
   });
 

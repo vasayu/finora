@@ -1,16 +1,63 @@
 // server/src/modules/stocks/stocks.service.ts
 
+const STOCK_LIST = [
+    { symbol: 'RELIANCE', name: 'Reliance Industries Ltd.' },
+    { symbol: 'TCS', name: 'Tata Consultancy Services Ltd.' },
+    { symbol: 'HDFCBANK', name: 'HDFC Bank Ltd.' },
+    { symbol: 'INFY', name: 'Infosys Ltd.' },
+    { symbol: 'ICICIBANK', name: 'ICICI Bank Ltd.' },
+    { symbol: 'HINDUNILVR', name: 'Hindustan Unilever Ltd.' },
+    { symbol: 'SBIN', name: 'State Bank of India' },
+    { symbol: 'BHARTIARTL', name: 'Bharti Airtel Ltd.' },
+    { symbol: 'ITC', name: 'ITC Ltd.' },
+    { symbol: 'KOTAKBANK', name: 'Kotak Mahindra Bank Ltd.' },
+    { symbol: 'LT', name: 'Larsen & Toubro Ltd.' },
+    { symbol: 'AXISBANK', name: 'Axis Bank Ltd.' },
+    { symbol: 'WIPRO', name: 'Wipro Ltd.' },
+    { symbol: 'BAJFINANCE', name: 'Bajaj Finance Ltd.' },
+    { symbol: 'MARUTI', name: 'Maruti Suzuki India Ltd.' },
+    { symbol: 'HCLTECH', name: 'HCL Technologies Ltd.' },
+    { symbol: 'TATAMOTORS', name: 'Tata Motors Ltd.' },
+    { symbol: 'SUNPHARMA', name: 'Sun Pharmaceutical Ind. Ltd.' },
+    { symbol: 'TITAN', name: 'Titan Company Ltd.' },
+    { symbol: 'ADANIENT', name: 'Adani Enterprises Ltd.' },
+    { symbol: 'NTPC', name: 'NTPC Ltd.' },
+    { symbol: 'POWERGRID', name: 'Power Grid Corp. of India Ltd.' },
+    { symbol: 'ULTRACEMCO', name: 'UltraTech Cement Ltd.' },
+    { symbol: 'ASIANPAINT', name: 'Asian Paints Ltd.' },
+    { symbol: 'TATASTEEL', name: 'Tata Steel Ltd.' },
+    { symbol: 'ONGC', name: 'Oil & Natural Gas Corp. Ltd.' },
+    { symbol: 'TECHM', name: 'Tech Mahindra Ltd.' },
+    { symbol: 'JSWSTEEL', name: 'JSW Steel Ltd.' },
+    { symbol: 'INDUSINDBK', name: 'IndusInd Bank Ltd.' },
+    { symbol: 'DRREDDY', name: 'Dr. Reddys Laboratories Ltd.' },
+];
+
 export class StocksService {
+    /**
+     * Search stocks by symbol or name
+     */
+    searchStocks(query: string, limit: number = 10) {
+        const q = query.toLowerCase();
+        return STOCK_LIST.filter(
+            (s) => s.symbol.toLowerCase().includes(q) || s.name.toLowerCase().includes(q)
+        ).slice(0, limit);
+    }
+
     /**
      * Generates realistic mock historical data for candlestick charts
      */
     async getHistory(symbol: string, timeframe: string, limit: number = 100) {
-        // Base prices for common symbols to make them look realistic
+        // Base prices for common Indian NSE symbols (in ₹)
         const basePrices: Record<string, number> = {
-            'AAPL': 170,
-            'MSFT': 400,
-            'NVDA': 850,
-            'TSLA': 180,
+            'RELIANCE': 2450, 'TCS': 3850, 'HDFCBANK': 1620, 'INFY': 1580,
+            'ICICIBANK': 1050, 'HINDUNILVR': 2520, 'SBIN': 780, 'BHARTIARTL': 1150,
+            'ITC': 440, 'KOTAKBANK': 1780, 'LT': 3420, 'AXISBANK': 1100,
+            'WIPRO': 480, 'BAJFINANCE': 6800, 'MARUTI': 10500, 'HCLTECH': 1450,
+            'TATAMOTORS': 720, 'SUNPHARMA': 1680, 'TITAN': 3250, 'ADANIENT': 2900,
+            'NTPC': 350, 'POWERGRID': 290, 'ULTRACEMCO': 10200, 'ASIANPAINT': 2850,
+            'TATASTEEL': 145, 'ONGC': 260, 'TECHM': 1320, 'JSWSTEEL': 880,
+            'INDUSINDBK': 1450, 'DRREDDY': 5800,
         };
 
         let currentPrice = basePrices[symbol] || 100;
