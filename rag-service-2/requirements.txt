@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+python-dotenv
+pydantic
+loguru
+langchain
+langchain-openai
+langgraph
+faiss-cpu
+psycopg2-binary
+openai
+langchain-community
+chromadb
+tiktoken
