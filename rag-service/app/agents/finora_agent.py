@@ -50,7 +50,6 @@ def build_agent(user_id: str):
         model="gpt-4o",
         temperature=0.2,
         streaming=False,
-        openai_api_key=settings.openai_api_key,
     )
 
     # User-scoped tools — user_id is baked into the closure
@@ -62,7 +61,7 @@ def build_agent(user_id: str):
     agent = create_react_agent(
         model=llm,
         tools=tools,
-        state_modifier=SystemMessage(content=SYSTEM_PROMPT),
+        prompt=SYSTEM_PROMPT,
     )
 
     logger.debug(f"Built agent for user {user_id} with {len(tools)} tools")

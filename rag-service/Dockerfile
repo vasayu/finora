@@ -1,7 +1,5 @@
-"""
-Dockerfile for the Finora RAG microservice.
-Uses Python 3.12 LTS slim image for minimal footprint.
-"""
+# Dockerfile for the Finora RAG microservice.
+# Uses Python 3.12 LTS slim image for minimal footprint.
 
 FROM python:3.12-slim
 

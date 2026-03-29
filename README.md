@@ -782,6 +782,59 @@ npm run dev
 
 ---
 
+## 🐳 Running with Docker
+
+The fastest way to get the entire Finora stack up and running is via **Docker Compose**. This will orchestrate the frontend, backend, RAG service, database, and message queue.
+
+### 1. Prerequisite Environment Setup
+
+You need to create three `.env.docker` files by copying the provided examples.
+
+#### Frontend (.env.docker)
+```bash
+cp .env.docker.example .env.docker
+# Open .env.docker and verify NEXT_PUBLIC_API_URL=http://backend:5000
+```
+
+#### Backend (server/.env.docker)
+```bash
+cp server/.env.docker.example server/.env.docker
+# Open server/.env.docker and add your OPENAI_API_KEY
+```
+
+#### RAG Service (rag-service/.env.docker)
+```bash
+cp rag-service/.env.docker.example rag-service/.env.docker
+# Open rag-service/.env.docker and add your OPENAI_API_KEY
+```
+
+### 2. Build and Start Services
+
+From the project root:
+
+```bash
+docker compose up --build
+```
+
+### 3. Initialize the Database
+
+Once the containers are running (wait for `Application startup complete` in the RAG logs), you need to push the Prisma schema to the database container:
+
+```bash
+# In a new terminal
+cd server
+npx prisma generate
+npx prisma db push
+```
+
+### 4. Access the Application
+
+- **Frontend:** [http://localhost:3000](http://localhost:3000)
+- **Backend API:** [http://localhost:5000/api/v1](http://localhost:5000/api/v1)
+- **RAG Service (Internal):** [http://localhost:8000](http://localhost:8000)
+
+---
+
 ## ☁️ Deployment Strategies
 
 When moving to production, treating Finora as three distinct services is recommended.

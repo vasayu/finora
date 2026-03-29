@@ -37,7 +37,6 @@ class FAISSManager:
     def __init__(self):
         self.embeddings = OpenAIEmbeddings(
             model="text-embedding-3-small",
-            openai_api_key=settings.openai_api_key,
         )
         self.base_path = Path(settings.faiss_store_path)
         self.base_path.mkdir(parents=True, exist_ok=True)

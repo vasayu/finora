@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { useLenis } from "lenis/react";
+import { useLenis } from "@studio-freight/react-lenis";
 import { motion, useScroll, useSpring } from "framer-motion";
 
 // Configuration for the minimap segments corresponding to sections

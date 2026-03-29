@@ -16,6 +16,9 @@ const envSchema = z.object({
     CLOUDINARY_API_KEY: z.string(),
     CLOUDINARY_API_SECRET: z.string(),
     OPENAI_API_KEY: z.string().default(''),
+    RAG_SERVICE_URL: z.string().default('http://rag-service:8000'),
+    REDIS_URL: z.string().optional(),
+    RABBITMQ_URL: z.string().optional(),
 });
 
 const _env = envSchema.safeParse(process.env);

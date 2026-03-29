@@ -1,0 +1,136 @@
+# ──────────────────────────────────────────────
+#  Finora – Full-Stack Docker Compose
+#  Services: frontend | backend | rag-service | postgres | redis | rabbitmq
+#  Usage:  docker compose up --build
+# ──────────────────────────────────────────────
+
+services:
+
+  # ── PostgreSQL ─────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: finora-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: finora
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - finora-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d finora"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ── Redis ──────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: finora-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - finora-network
+
+  # ── RabbitMQ ───────────────────────────────
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: finora-mq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - finora-network
+
+  # ── RAG Service (Python + FastAPI) ─────────
+  rag-service:
+    build:
+      context: ./rag-service
+      dockerfile: Dockerfile
+    container_name: finora-rag
+    restart: always
+    env_file:
+      - ./rag-service/.env.docker
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - finora-network
+    volumes:
+      - rag_data:/app/data
+
+  # ── Backend (Node.js + Express + Prisma) ───
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: finora-backend
+    restart: always
+    env_file:
+      - ./server/.env.docker
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/finora?schema=public
+      RAG_SERVICE_URL: http://rag-service:8000
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+      rag-service:
+        condition: service_started
+    networks:
+      - finora-network
+    volumes:
+      - backend_uploads:/app/uploads
+
+  # ── Frontend (Next.js 14) ──────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
+    container_name: finora-frontend
+    restart: always
+    env_file:
+      - .env.docker
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: http://localhost:5000/api/v1
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - finora-network
+
+# ── Networks ───────────────────────────────────
+networks:
+  finora-network:
+    driver: bridge
+
+# ── Volumes ────────────────────────────────────
+volumes:
+  postgres_data:
+    driver: local
+  backend_uploads:
+    driver: local
+  rag_data:
+    driver: local

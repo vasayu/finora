@@ -33,6 +33,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+.env.docker
+server/.env.docker
 
 server/logs\\.ed07d9d6973b293ce9d3d2367342b3b038e7bdc0-audit.json
 
