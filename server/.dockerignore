@@ -1,0 +1,24 @@
+# ── Backend .dockerignore ──────────────────────
+# Keep build context small & fast
+
+node_modules
+dist
+.git
+.gitignore
+.DS_Store
+*.log
+npm-debug.log*
+
+# Env files (injected at runtime via docker-compose)
+.env*
+!.env.example
+
+# Docker files themselves
+Dockerfile
+.dockerignore
+
+# Misc
+logs/
+uploads/
+ecosystem.config.js
+*.tsbuildinfo

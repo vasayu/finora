@@ -83,11 +83,17 @@ export default function Sidebar() {
     ? `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`.toUpperCase()
     : "?";
 
-  const roleConfig = ROLE_CONFIG[user?.role || "EMPLOYEE"];
+  // Handle legacy roles from older database schema
+  const currentRole = user?.role || "EMPLOYEE";
+  const effectiveRole = ["USER", "ADMIN", "SUPER_ADMIN"].includes(currentRole) 
+    ? "EMPLOYEE" 
+    : currentRole;
+
+  const roleConfig = ROLE_CONFIG[effectiveRole] || ROLE_CONFIG["EMPLOYEE"];
   const RoleIcon = roleConfig?.icon || Briefcase;
 
   const navItems = ALL_NAV_ITEMS.filter((item) => {
-    if (!item.roles.includes(user?.role || "EMPLOYEE")) return false;
+    if (!item.roles.includes(effectiveRole)) return false;
     return true;
   });
 

@@ -2,7 +2,10 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { themeBalham } from "ag-grid-community";
+import { themeBalham, ModuleRegistry, AllCommunityModule } from "ag-grid-community";
+
+// Register all community modules once at module level (required from v35+)
+ModuleRegistry.registerModules([AllCommunityModule]);
 import "ag-grid-community/styles/ag-grid.css";
 import { useTerminalStore } from "@/lib/store/terminalStore";
 import { useAuth } from "@/Components/AuthProvider";

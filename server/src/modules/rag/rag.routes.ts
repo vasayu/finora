@@ -8,10 +8,11 @@
 
 import { Router, Request, Response } from 'express';
 import { protect } from '../../middleware/auth.middleware';
+import { env } from '../../config/env';
 
 const router = Router();
 
-const RAG_SERVICE_URL = process.env.RAG_SERVICE_URL || 'http://127.0.0.1:8000';
+const RAG_SERVICE_URL = env.RAG_SERVICE_URL;
 
 // ── Chat ──────────────────────────────────────────────────────────────────────
 router.post('/chat', protect, async (req: Request, res: Response) => {
