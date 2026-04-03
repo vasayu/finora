@@ -22,12 +22,9 @@ import {
   Users,
   PieChart,
   Building2,
-<<<<<<< HEAD
   ChevronLeft,
   ChevronRight,
-=======
   Blocks,
->>>>>>> b32668c744056c0e1834b1f814086d946845056d
 } from "lucide-react";
 import { useAuth } from "@/Components/AuthProvider";
 
