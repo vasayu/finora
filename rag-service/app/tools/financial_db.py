@@ -25,14 +25,15 @@ _engine_instance = None
 def _get_engine():
     global _engine_instance
     if _engine_instance is None:
-        # Strip Prisma-specific params (e.g. ?schema=public) that psycopg2 rejects
-        db_url = settings.database_url.split("?")[0]
-        logger.info(f"[financial_db] Connecting to: {db_url[:40]}...")
+        # Keep original URL but ensure we don't pass -csearch_path to Neon pooler
+        db_url = settings.database_url
+        logger.info(f"[financial_db] Connecting to DB...")
         _engine_instance = create_engine(
             db_url,
             pool_pre_ping=True,
-            connect_args={"options": "-csearch_path=public"},
+            # Removed connect_args with search_path as Neon pooler rejects it
         )
+
     return _engine_instance
 
 

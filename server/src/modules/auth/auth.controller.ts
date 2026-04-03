@@ -6,8 +6,9 @@ import { z } from 'zod';
 const registerSchema = z.object({
     email: z.string().email(),
     password: z.string().min(8),
-    firstName: z.string().min(2),
-    lastName: z.string().min(2),
+    firstName: z.string().min(1),
+    lastName: z.string().min(1),
+
     role: z.enum(['EMPLOYEE', 'ACCOUNTANT', 'CFO', 'MANAGER', 'INVESTOR']).default('EMPLOYEE'),
 });
 
@@ -17,8 +18,9 @@ const loginSchema = z.object({
 });
 
 const updateProfileSchema = z.object({
-    firstName: z.string().min(2).optional(),
-    lastName: z.string().min(2).optional(),
+    firstName: z.string().min(1).optional(),
+    lastName: z.string().min(1).optional(),
+
     email: z.string().email().optional(),
 });
 

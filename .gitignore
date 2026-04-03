@@ -50,3 +50,5 @@ next-env.d.ts
 
 # logs
 server/logs
+
+dist/

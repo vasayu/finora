@@ -189,7 +189,7 @@ export default function OrganizationPage() {
                 <div className="mb-8">
                     <h1 className="text-2xl font-bold text-foreground">Organization</h1>
                     <p className="text-foreground/50 text-sm mt-1">
-                        Create or join an organization to collaborate with your team
+                        dont or join an organization to collaborate with your team
                     </p>
                 </div>
 
