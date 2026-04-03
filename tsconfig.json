@@ -35,7 +35,7 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "server/dist/modules/webhook/webhook.routes.ts"  ],
   "exclude": [
     "node_modules",
     "server",
