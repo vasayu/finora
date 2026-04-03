@@ -19,6 +19,10 @@ import ragRoutes from './modules/rag/rag.routes';
 // Whatsapp automation 
 import webhookRoutes from './modules/webhook/webhook.routes';
 import watchlistRoutes from './modules/watchlist/watchlist.routes';
+import budgetsRoutes from './modules/budgets/budgets.routes';
+
+// Telegram bot
+import telegramRoutes from './modules/telegram/telegram.routes';
 
 const app = express();
 
@@ -55,6 +59,8 @@ app.use('/api/v1/ai', aiRoutes);
 app.use('/api/v1/rag', ragRoutes);
 
 app.use('/api/v1/watchlist', watchlistRoutes);
+app.use('/api/v1/budgets', budgetsRoutes);
+app.use('/api/v1/telegram', telegramRoutes);
 
 
 // Global Error Handler

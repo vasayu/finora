@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { useLenis } from "@studio-freight/react-lenis";
+import { usePathname } from "next/navigation";
+import { useLenis } from "lenis/react";
 import { motion, useScroll, useSpring } from "framer-motion";
 
 // Configuration for the minimap segments corresponding to sections
@@ -17,6 +18,7 @@ export default function ScrollMinimap() {
   const [activeSection, setActiveSection] = useState<string>("hero");
   const [hoveredSection, setHoveredSection] = useState<string | null>(null);
 
+  const pathname = usePathname();
   const lenis = useLenis();
   const { scrollYProgress } = useScroll();
 
@@ -88,6 +90,7 @@ export default function ScrollMinimap() {
     }
   };
 
+  if (pathname !== "/") return null;
   if (!isVisible) return null;
 
   return (

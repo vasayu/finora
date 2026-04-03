@@ -98,6 +98,9 @@ export default function OrganizationPage() {
     const [mode, setMode] = useState<"idle" | "create" | "join">("idle");
     const [orgName, setOrgName] = useState("");
     const [inviteCode, setInviteCode] = useState("");
+    const [domain, setDomain] = useState("");
+    const [role, setRole] = useState("EMPLOYEE");
+    const [position, setPosition] = useState("");
 
     const fetchOrg = useCallback(async () => {
         if (!token) return;
@@ -130,12 +133,15 @@ export default function OrganizationPage() {
             }>("/organizations", {
                 method: "POST",
                 token,
-                body: { name: orgName },
+                body: { name: orgName, domain, role, position },
             });
             setOrg(res.data.organization);
             setSuccess("Organization created successfully!");
             setMode("idle");
             setOrgName("");
+            setDomain("");
+            setPosition("");
+            setRole("EMPLOYEE");
             await fetchProfile();
         } catch (err: any) {
             setError(err.message || "Failed to create organization");
@@ -156,12 +162,15 @@ export default function OrganizationPage() {
             }>("/organizations/join", {
                 method: "POST",
                 token,
-                body: { inviteCode: inviteCode.trim() },
+                body: { inviteCode: inviteCode.trim(), domain, role, position },
             });
             setOrg(res.data.organization);
             setSuccess("Joined organization successfully!");
             setMode("idle");
             setInviteCode("");
+            setDomain("");
+            setPosition("");
+            setRole("EMPLOYEE");
             await fetchProfile();
         } catch (err: any) {
             setError(err.message || "Failed to join organization");
@@ -287,6 +296,48 @@ export default function OrganizationPage() {
                                         placeholder="Acme Corp"
                                     />
                                 </div>
+                                <div>
+                                    <label className="text-xs font-medium text-foreground/60 mb-1.5 block">
+                                        Organization Domain
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={domain}
+                                        onChange={(e) => setDomain(e.target.value)}
+                                        className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+                                        placeholder="acme.com"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-xs font-medium text-foreground/60 mb-1.5 block">
+                                            Your Role
+                                        </label>
+                                        <select
+                                            value={role}
+                                            onChange={(e) => setRole(e.target.value)}
+                                            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all appearance-none"
+                                        >
+                                            <option value="EMPLOYEE">Employee</option>
+                                            <option value="MANAGER">Manager</option>
+                                            <option value="CFO">CFO</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-medium text-foreground/60 mb-1.5 block">
+                                            Position/Title
+                                        </label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={position}
+                                            onChange={(e) => setPosition(e.target.value)}
+                                            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+                                            placeholder="e.g. Senior Analyst"
+                                        />
+                                    </div>
+                                </div>
                                 <div className="flex gap-3">
                                     <button
                                         type="button"
@@ -342,6 +393,48 @@ export default function OrganizationPage() {
                                         placeholder="ABCD1234"
                                         maxLength={8}
                                     />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-medium text-foreground/60 mb-1.5 block">
+                                        Organization Domain (Confirm)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={domain}
+                                        onChange={(e) => setDomain(e.target.value)}
+                                        className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all"
+                                        placeholder="acme.com"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-xs font-medium text-foreground/60 mb-1.5 block">
+                                            Your Role
+                                        </label>
+                                        <select
+                                            value={role}
+                                            onChange={(e) => setRole(e.target.value)}
+                                            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all appearance-none"
+                                        >
+                                            <option value="EMPLOYEE">Employee</option>
+                                            <option value="MANAGER">Manager</option>
+                                            <option value="CFO">CFO</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-medium text-foreground/60 mb-1.5 block">
+                                            Position/Title
+                                        </label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={position}
+                                            onChange={(e) => setPosition(e.target.value)}
+                                            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all"
+                                            placeholder="e.g. Accountant"
+                                        />
+                                    </div>
                                 </div>
                                 <div className="flex gap-3">
                                     <button

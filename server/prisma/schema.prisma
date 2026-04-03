@@ -16,6 +16,7 @@ model User {
   password       String
   firstName      String
   lastName       String
+  encryptionKey  String?
   role           Role           @default(EMPLOYEE)
   position       String?
   organizationId String?
@@ -24,6 +25,7 @@ model User {
   transactions   Transaction[]
   auditTrails    AuditTrail[]
   watchlist      Watchlist[]
+  budgets        Budget[]
 
   // Role-specific profiles (only one will be populated based on role)
   employeeProfile   EmployeeProfile?
@@ -56,6 +58,7 @@ model Organization {
   documents    Document[]
   transactions Transaction[]
   orgWatchlist  OrgWatchlist[]
+  budgets      Budget[]
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 }
@@ -233,4 +236,20 @@ model OrgWatchlist {
   addedAt        DateTime     @default(now())
 
   @@unique([organizationId, symbol])
+}
+
+// ─── Budget Models ──────────────────────────────────────────────────
+
+model Budget {
+  id             String       @id @default(uuid())
+  name           String
+  amount         Float
+  category       String?      // Links to Transaction categories
+  period         String       @default("MONTHLY") // e.g., MONTHLY, YEARLY, ONE_TIME
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }
