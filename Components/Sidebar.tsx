@@ -72,7 +72,6 @@ const ALL_NAV_ITEMS = [
   { label: "Alerts", href: "/alerts", icon: ShieldAlert, roles: ["ACCOUNTANT", "CFO", "MANAGER"] },
   { label: "P&L Report", href: "/reports/pnl", icon: TrendingUp, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
   { label: "Balance Sheet", href: "/reports/balance-sheet", icon: Scale, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
-  { label: "Trading Terminal", href: "/terminal", icon: Activity, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
   { label: "AI Assistant", href: "/ai", icon: Bot, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
   { label: "Integrations", href: "/integrations", icon: Blocks, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
   { label: "Organization", href: "/organization", icon: Building2, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
