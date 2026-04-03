@@ -16,6 +16,8 @@ import alertsRoutes from './modules/alerts/alerts.routes';
 import aiRoutes from './modules/ai/ai.routes';
 import stocksRoutes from './modules/stocks/stocks.routes';
 import ragRoutes from './modules/rag/rag.routes';
+import watchlistRoutes from './modules/watchlist/watchlist.routes';
+
 const app = express();
 
 app.use(helmet());
@@ -47,6 +49,8 @@ app.use('/api/v1/alerts', alertsRoutes);
 app.use('/api/v1/ai', aiRoutes);
 app.use('/api/v1/stocks', stocksRoutes);
 app.use('/api/v1/rag', ragRoutes);
+app.use('/api/v1/watchlist', watchlistRoutes);
+
 // Global Error Handler
 app.use(errorHandler);
 

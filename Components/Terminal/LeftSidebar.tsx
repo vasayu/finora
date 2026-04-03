@@ -253,7 +253,7 @@ export default function LeftSidebar() {
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
-                className="absolute z-50 left-0 right-0 top-full mt-2 bg-[#0d1424] border border-[#1c2940] rounded-xl shadow-2xl overflow-hidden max-h-72 overflow-y-auto"
+                className="absolute z-50 left-3 right-3 top-full mt-2 bg-[#0d1424] border border-[#1c2940] rounded-xl shadow-2xl overflow-hidden max-h-72 overflow-y-auto"
               >
               {searchResults.map((result) => {
                 const alreadyAdded = isInWatchlist(result.symbol);

@@ -19,10 +19,16 @@ class AuthService {
         }
         const salt = await bcryptjs_1.default.genSalt(10);
         const hashedPassword = await bcryptjs_1.default.hash(data.password, salt);
+        const role = data.role || 'EMPLOYEE';
         const user = await this.repository.createUser({
-            ...data,
+            email: data.email,
+            firstName: data.firstName,
+            lastName: data.lastName,
             password: hashedPassword,
+            role,
         });
+        // Create the role-specific profile
+        await this.repository.createRoleProfile(user.id, role);
         const tokens = (0, jwt_1.generateTokens)(user.id, user.role);
         return {
             user: {
@@ -54,6 +60,41 @@ class AuthService {
                 role: user.role,
             },
             ...tokens,
+        };
+    }
+    async getProfile(userId) {
+        const user = await this.repository.findUserById(userId);
+        if (!user) {
+            throw { statusCode: 404, message: 'User not found' };
+        }
+        return {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+            organizationId: user.organizationId,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+        };
+    }
+    async updateProfile(userId, data) {
+        if (data.email) {
+            const existingUser = await this.repository.findUserByEmail(data.email);
+            if (existingUser && existingUser.id !== userId) {
+                throw { statusCode: 400, message: 'Email already in use' };
+            }
+        }
+        const user = await this.repository.updateUser(userId, data);
+        return {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+            organizationId: user.organizationId,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
         };
     }
 }

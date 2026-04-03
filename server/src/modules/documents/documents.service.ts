@@ -2,8 +2,11 @@ import { DocumentsRepository } from './documents.repository';
 import path from 'path';
 import fs from 'fs';
 import logger from '../../utils/logger';
+import axios from 'axios';
+import FormData from 'form-data';
+import { env } from '../../config/env';
 
-const RAG_SERVICE_URL = process.env.RAG_SERVICE_URL || 'http://localhost:8000';
+const RAG_SERVICE_URL = env.RAG_SERVICE_URL || 'http://localhost:4000';
 
 const UPLOAD_DIR = path.join(process.cwd(), 'uploads');
 
@@ -20,11 +23,31 @@ export class DocumentsService {
     }
 
     async processUpload(file: Express.Multer.File, userId: string, organizationId?: string) {
-        // Save file locally
+        // Save file locally for RAG processing
         const uniqueName = `${Date.now()}-${file.originalname}`;
         const filePath = path.join(UPLOAD_DIR, uniqueName);
         fs.writeFileSync(filePath, file.buffer);
-        const fileUrl = `/uploads/${uniqueName}`;
+        
+        // Upload to Pinata IPFS
+        let fileUrl = `/uploads/${uniqueName}`;
+        try {
+            const formData = new FormData();
+            formData.append('file', file.buffer, file.originalname);
+
+            const response = await axios.post('https://api.pinata.cloud/pinning/pinFileToIPFS', formData, {
+                headers: {
+                    'pinata_api_key': env.PINATA_APIKEY,
+                    'pinata_secret_api_key': env.PINATA_SECRETKEY,
+                    ...formData.getHeaders()
+                }
+            });
+            const ipfsHash = response.data.IpfsHash;
+            fileUrl = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
+            logger.info(`Uploaded document to IPFS: ${ipfsHash}`);
+        } catch (error: any) {
+            logger.error(`Pinata IPFS upload failed: ${error?.response?.data?.error?.details || error.message}`);
+            // Fallback to local URL is kept
+        }
 
         // Save record to DB
         const document = await this.repository.createDocument({
@@ -46,7 +69,17 @@ export class DocumentsService {
                 file_name: file.originalname,
                 organization_id: organizationId || null,
             }),
-        }).catch((err) => logger.error(`RAG auto-ingest failed for doc ${document.id}: ${err.message}`));
+        }).then(async (res) => {
+            if (res.ok) {
+                await this.repository.updateDocumentStatus(document.id, 'COMPLETED');
+            } else {
+                await this.repository.updateDocumentStatus(document.id, 'FAILED');
+                logger.error(`RAG auto-ingest failed with status ${res.status} for doc ${document.id}`);
+            }
+        }).catch((err) => {
+            this.repository.updateDocumentStatus(document.id, 'FAILED');
+            logger.error(`RAG auto-ingest crashed for doc ${document.id}: ${err.message}`);
+        });
 
         return document;
     }

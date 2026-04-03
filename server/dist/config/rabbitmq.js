@@ -1,38 +1,17 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
+// RabbitMQ is currently disabled. This file is a placeholder for future RabbitMQ integration.
+// When re-enabling, install the `amqplib` package and add RABBITMQ_URL to the env schema.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.publishToQueue = exports.getRabbitChannel = exports.connectRabbitMQ = void 0;
-const amqplib_1 = __importDefault(require("amqplib"));
-const env_1 = require("./env");
-const logger_1 = __importDefault(require("../utils/logger"));
-let connection;
-let channel;
 const connectRabbitMQ = async () => {
-    try {
-        connection = await amqplib_1.default.connect(env_1.env.RABBITMQ_URL);
-        channel = await connection.createChannel();
-        logger_1.default.info('RabbitMQ connected successfully');
-        // Assert necessary queues
-        await channel.assertQueue('document_processing', { durable: true });
-        await channel.assertQueue('alert_notifications', { durable: true });
-    }
-    catch (error) {
-        logger_1.default.error('Failed to connect to RabbitMQ', error);
-        process.exit(1);
-    }
+    console.log('⚠️  RabbitMQ is disabled — message queuing is not active');
 };
 exports.connectRabbitMQ = connectRabbitMQ;
 const getRabbitChannel = () => {
-    if (!channel) {
-        throw new Error('RabbitMQ channel not initialized');
-    }
-    return channel;
+    throw new Error('RabbitMQ is not configured');
 };
 exports.getRabbitChannel = getRabbitChannel;
 const publishToQueue = async (queue, data) => {
-    const ch = (0, exports.getRabbitChannel)();
-    return ch.sendToQueue(queue, Buffer.from(JSON.stringify(data)), { persistent: true });
+    console.log(`⚠️  RabbitMQ disabled — message to "${queue}" was not published:`, JSON.stringify(data).slice(0, 100));
 };
 exports.publishToQueue = publishToQueue;
