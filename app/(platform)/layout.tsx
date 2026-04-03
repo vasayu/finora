@@ -21,6 +21,8 @@ export default function PlatformLayout({
 
 
 
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#050505]">
@@ -36,8 +38,8 @@ export default function PlatformLayout({
 
   return (
     <div className="min-h-screen bg-[#050505]">
-      <Sidebar />
-      <main className="ml-64 min-h-screen">
+      <Sidebar isCollapsed={isCollapsed} onToggle={() => setIsCollapsed(!isCollapsed)} />
+      <main className={`min-h-screen transition-all duration-300 ${isCollapsed ? "ml-20" : "ml-64"}`}>
         <div className="p-8">{children}</div>
       </main>
     </div>
