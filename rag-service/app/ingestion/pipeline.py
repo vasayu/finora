@@ -29,11 +29,32 @@ _splitter = RecursiveCharacterTextSplitter(
 )
 
 
+class PandasExcelLoader:
+    def __init__(self, file_path: str):
+        self.file_path = file_path
+
+    def load(self) -> list[Document]:
+        import pandas as pd
+        docs = []
+        try:
+            excel_data = pd.read_excel(self.file_path, sheet_name=None)
+            for sheet_name, df in excel_data.items():
+                csv_data = df.to_csv(index=False)
+                content = f"Sheet Name: {sheet_name}\n\n{csv_data}"
+                docs.append(Document(page_content=content, metadata={"source": self.file_path, "sheet": str(sheet_name)}))
+        except Exception as e:
+            logger.error(f"Failed to load Excel file {self.file_path}: {e}")
+            raise
+        return docs
+
+
 def _get_loader(file_path: str):
     """Select the appropriate LangChain document loader based on file extension."""
     ext = Path(file_path).suffix.lower()
     if ext == ".pdf":
         return PyPDFLoader(file_path)
+    elif ext in {".xlsx", ".xls"}:
+        return PandasExcelLoader(file_path)
     elif ext == ".csv":
         return CSVLoader(file_path)
     elif ext in {".txt", ".md"}:

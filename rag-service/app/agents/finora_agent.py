@@ -61,7 +61,7 @@ def build_agent(user_id: str):
     agent = create_react_agent(
         model=llm,
         tools=tools,
-        prompt=SYSTEM_PROMPT,
+        prompt=SystemMessage(content=SYSTEM_PROMPT),
     )
 
     logger.debug(f"Built agent for user {user_id} with {len(tools)} tools")

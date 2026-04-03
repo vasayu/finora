@@ -19,6 +19,8 @@ const envSchema = z.object({
     RAG_SERVICE_URL: z.string().default('http://rag-service:8000'),
     REDIS_URL: z.string().optional(),
     RABBITMQ_URL: z.string().optional(),
+    PINATA_APIKEY: z.string(),
+    PINATA_SECRETKEY: z.string(),
 });
 
 const _env = envSchema.safeParse(process.env);

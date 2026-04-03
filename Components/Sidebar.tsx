@@ -22,8 +22,12 @@ import {
   Users,
   PieChart,
   Building2,
+<<<<<<< HEAD
   ChevronLeft,
   ChevronRight,
+=======
+  Blocks,
+>>>>>>> b32668c744056c0e1834b1f814086d946845056d
 } from "lucide-react";
 import { useAuth } from "@/Components/AuthProvider";
 
@@ -73,6 +77,7 @@ const ALL_NAV_ITEMS = [
   { label: "Balance Sheet", href: "/reports/balance-sheet", icon: Scale, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
   { label: "Trading Terminal", href: "/terminal", icon: Activity, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
   { label: "AI Assistant", href: "/ai", icon: Bot, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
+  { label: "Integrations", href: "/integrations", icon: Blocks, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
   { label: "Organization", href: "/organization", icon: Building2, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
   { label: "Profile", href: "/profile", icon: User, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
 ];
