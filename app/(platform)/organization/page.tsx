@@ -15,6 +15,11 @@ import {
     Calculator,
     PieChart,
     Sparkles,
+    MapPin,
+    TrendingUp,
+    DollarSign,
+    ExternalLink,
+    LineChart
 } from "lucide-react";
 
 const ROLE_CONFIG: Record<
@@ -59,16 +64,25 @@ interface OrgMember {
     lastName: string;
     email: string;
     role: string;
+    position: string;
     createdAt: string;
 }
 
 interface Organization {
     id: string;
     name: string;
+    domain: string;
     inviteCode: string;
     ownerId: string;
     users: OrgMember[];
     createdAt: string;
+    revenueRange?: string;
+    fundingStage?: string;
+    companyType?: string;
+    stockTicker?: string;
+    headquarters?: string;
+    size?: string;
+    linkedinUrl?: string;
 }
 
 export default function OrganizationPage() {
@@ -372,17 +386,23 @@ export default function OrganizationPage() {
                 </div>
             )}
 
-            {/* Org Header */}
-            <div className="bg-[#0a0a0a] border border-white/[0.06] rounded-2xl p-6 mb-6">
-                <div className="flex items-center justify-between">
+            <div className="bg-[#0a0a0a] border border-white/[0.06] rounded-2xl p-6 mb-6 shadow-xl">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/[0.06]">
                     <div className="flex items-center gap-4">
                         <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-orange-400 flex items-center justify-center">
                             <Building2 size={24} className="text-white" />
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-foreground">{org.name}</h2>
-                            <p className="text-sm text-foreground/40">
-                                {org.users.length} member{org.users.length !== 1 ? "s" : ""} ·
+                            <h2 className="text-xl font-bold text-foreground">
+                                {org.name}
+                                {org.companyType && (
+                                    <span className="text-xs ml-3 font-medium text-gray-400 bg-white/5 border border-white/5 px-2 py-1 rounded-md inline-flex align-middle">
+                                        {org.companyType} Company
+                                    </span>
+                                )}
+                            </h2>
+                            <p className="text-sm text-foreground/40 mt-1">
+                                Domain: {org.domain} · {org.users.length} member{org.users.length !== 1 ? "s" : ""} ·
                                 Created{" "}
                                 {new Date(org.createdAt).toLocaleDateString("en-US", {
                                     month: "short",
@@ -414,6 +434,62 @@ export default function OrganizationPage() {
                             )}
                         </button>
                     </div>
+                </div>
+
+                {/* Organization Details Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-semibold text-foreground/40 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                            <MapPin size={12} /> Headquarters
+                        </span>
+                        <span className="text-sm text-foreground/80 font-medium">{org.headquarters || "—"}</span>
+                    </div>
+
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-semibold text-foreground/40 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                            <Users size={12} /> Company Size
+                        </span>
+                        <span className="text-sm text-foreground/80 font-medium">{org.size || "—"} Employees</span>
+                    </div>
+
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-semibold text-foreground/40 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                            <DollarSign size={12} /> Revenue Range
+                        </span>
+                        <span className="text-sm text-foreground/80 font-medium">{org.revenueRange || "—"}</span>
+                    </div>
+
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-semibold text-foreground/40 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                            <TrendingUp size={12} /> Funding Stage
+                        </span>
+                        <span className="text-sm text-foreground/80 font-medium">{org.fundingStage || "—"}</span>
+                    </div>
+
+                    {org.companyType === "Public" && org.stockTicker && (
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-semibold text-foreground/40 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                <LineChart size={12} /> Stock Ticker
+                            </span>
+                            <span className="text-sm text-emerald-400 font-bold tracking-wider">{org.stockTicker}</span>
+                        </div>
+                    )}
+
+                    {org.linkedinUrl && (
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-semibold text-foreground/40 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                <ExternalLink size={12} /> Socials
+                            </span>
+                            <a 
+                                href={org.linkedinUrl} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="text-sm text-blue-400 hover:text-blue-300 font-medium underline underline-offset-2 break-all"
+                            >
+                                LinkedIn Profile
+                            </a>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -466,7 +542,7 @@ export default function OrganizationPage() {
                                                     )}
                                                 </p>
                                                 <p className="text-xs text-foreground/40 truncate">
-                                                    {member.email}
+                                                    {member.email} · {member.position || 'No Position'}
                                                 </p>
                                             </div>
                                         </div>

@@ -35,43 +35,126 @@ export class FinancialsService {
 
         let totalIncome = 0;
         let totalExpense = 0;
+        let cogs = 0;
         const breakdown: Record<string, number> = {};
         
-        // Dictionary for chronological charting: Map<"Month YYYY", { Income: number, Expenses: number }>
-        const monthlyDataMap = new Map<string, { name: string; Income: number; Expenses: number }>();
+        // Specific categories mapping for requested charts
+        const categorizedExpenses = {
+            'Salaries': 0,
+            'Marketing': 0,
+            'Operations': 0,
+            'Tools/SaaS': 0,
+            'Other': 0
+        };
 
-        // Sort transactions chronologically first so the map populates sequentially
+        const COGS_KEYWORDS = ['inventory', 'cogs', 'cost of goods sold', 'raw materials', 'materials', 'direct labor'];
+
+        // Dictionary for chronological charting: Map<"YYYY-MM", ...> (Better for sorting)
+        const monthlyDataMap = new Map<string, { yearMonth: string, name: string; Income: number; Expenses: number; Profit: number }>();
+
         const sortedTx = [...transactions].sort((a, b) => a.date.getTime() - b.date.getTime());
 
         sortedTx.forEach((tx) => {
+            const catLower = tx.category.toLowerCase();
+            
             if (tx.type === 'INCOME') totalIncome += tx.amount;
             if (tx.type === 'EXPENSE') {
                 totalExpense += tx.amount;
                 breakdown[tx.category] = (breakdown[tx.category] || 0) + tx.amount;
+
+                // Identify COGS
+                if (COGS_KEYWORDS.some(k => catLower.includes(k))) {
+                    cogs += tx.amount;
+                }
+
+                // Categorize for requested charts
+                if (catLower.includes('salary') || catLower.includes('payroll') || catLower.includes('wage')) {
+                    categorizedExpenses['Salaries'] += tx.amount;
+                } else if (catLower.includes('marketing') || catLower.includes('ad ') || catLower.includes('ads') || catLower.includes('promotion')) {
+                    categorizedExpenses['Marketing'] += tx.amount;
+                } else if (catLower.includes('operation') || catLower.includes('rent') || catLower.includes('utilities') || catLower.includes('office') || catLower.includes('maintenance')) {
+                    categorizedExpenses['Operations'] += tx.amount;
+                } else if (catLower.includes('software') || catLower.includes('saas') || catLower.includes('tool') || catLower.includes('license') || catLower.includes('subscription')) {
+                    categorizedExpenses['Tools/SaaS'] += tx.amount;
+                } else {
+                    categorizedExpenses['Other'] += tx.amount;
+                }
             }
 
             // Group for the Trend Chart
-            const monthYear = tx.date.toLocaleString('default', { month: 'short', year: 'numeric' });
-            if (!monthlyDataMap.has(monthYear)) {
-                monthlyDataMap.set(monthYear, { name: monthYear, Income: 0, Expenses: 0 });
+            const monthYearName = tx.date.toLocaleString('default', { month: 'short', year: 'numeric' });
+            // Format YYYY-MM for sorting
+            const yearMonthStr = `${tx.date.getFullYear()}-${String(tx.date.getMonth() + 1).padStart(2, '0')}`;
+            
+            if (!monthlyDataMap.has(yearMonthStr)) {
+                monthlyDataMap.set(yearMonthStr, { yearMonth: yearMonthStr, name: monthYearName, Income: 0, Expenses: 0, Profit: 0 });
             }
-            const monthGroup = monthlyDataMap.get(monthYear)!;
+            const monthGroup = monthlyDataMap.get(yearMonthStr)!;
             if (tx.type === 'INCOME') {
                 monthGroup.Income += tx.amount;
             } else if (tx.type === 'EXPENSE') {
                 monthGroup.Expenses += tx.amount;
             }
+            monthGroup.Profit = monthGroup.Income - monthGroup.Expenses;
         });
 
-        const monthlyTrend = Array.from(monthlyDataMap.values());
+        // Compute Growth Metrics (MoM)
+        let revenueGrowth = 0, expenseGrowth = 0, profitGrowth = 0;
+        const sortedMonths = Array.from(monthlyDataMap.values()).sort((a, b) => a.yearMonth.localeCompare(b.yearMonth));
+        if (sortedMonths.length >= 2) {
+            const currentMonth = sortedMonths[sortedMonths.length - 1];
+            const previousMonth = sortedMonths[sortedMonths.length - 2];
+
+            revenueGrowth = previousMonth.Income === 0 ? 100 : ((currentMonth.Income - previousMonth.Income) / previousMonth.Income) * 100;
+            expenseGrowth = previousMonth.Expenses === 0 ? 100 : ((currentMonth.Expenses - previousMonth.Expenses) / previousMonth.Expenses) * 100;
+            profitGrowth = previousMonth.Profit === 0 ? 100 : ((currentMonth.Profit - previousMonth.Profit) / Math.abs(previousMonth.Profit)) * 100;
+        }
+
+        const monthlyTrend = sortedMonths.map(item => ({ name: item.name, Income: item.Income, Expenses: item.Expenses, Profit: item.Profit }));
+
+        // Margins
+        const grossProfit = totalIncome - cogs;
+        const opex = totalExpense - cogs;
+        const operatingProfit = grossProfit - opex; // simplified
+        const netProfit = totalIncome - totalExpense;
+
+        const grossProfitMargin = totalIncome > 0 ? (grossProfit / totalIncome) * 100 : 0;
+        const operatingMargin = totalIncome > 0 ? (operatingProfit / totalIncome) * 100 : 0;
+        const netProfitMargin = totalIncome > 0 ? (netProfit / totalIncome) * 100 : 0;
+
+        // Burn Rate & Runway
+        // Average monthly expenses over the available months (up to 12)
+        const monthsCount = sortedMonths.length > 0 ? sortedMonths.length : 1;
+        const monthlyBurnRate = totalExpense / monthsCount;
+
+        // Get cash balance for Runway
+        const balanceSheet = await this.getBalanceSheet(userId, organizationId, endDate);
+        const cashRow = balanceSheet.rows.find(r => r.account === 'Cash & Cash Equivalents');
+        const cashBalance = cashRow ? cashRow.balance : 0;
+        const runwayMonths = monthlyBurnRate > 0 ? cashBalance / monthlyBurnRate : 0;
+
+        // Planned vs Actual (Mocked since we don't have Budget data in DB yet)
+        const plannedVsActualData = [
+            { category: 'Salaries', actual: categorizedExpenses['Salaries'], planned: categorizedExpenses['Salaries'] * 1.1 },
+            { category: 'Marketing', actual: categorizedExpenses['Marketing'], planned: categorizedExpenses['Marketing'] * 0.8 },
+            { category: 'Operations', actual: categorizedExpenses['Operations'], planned: categorizedExpenses['Operations'] * 0.95 },
+            { category: 'Tools/SaaS', actual: categorizedExpenses['Tools/SaaS'], planned: categorizedExpenses['Tools/SaaS'] * 1.05 }
+        ].filter(d => d.actual > 0 || d.planned > 0);
 
         return {
             totalIncome,
             totalExpense,
-            netProfit: totalIncome - totalExpense,
+            netProfit,
             transactionsCount: transactions.length,
             breakdown,
-            monthlyTrend
+            categorizedExpenses, // requested pie chart categories
+            monthlyTrend,
+            margins: { grossProfitMargin, operatingMargin, netProfitMargin },
+            growth: { revenueGrowth, expenseGrowth, profitGrowth },
+            burnRate: monthlyBurnRate,
+            runwayMonths,
+            plannedVsActualData,
+            missingDataFlags: { plannedBudget: true, cashBalance: cashBalance === 0 } // Used to show note
         };
     }
 
