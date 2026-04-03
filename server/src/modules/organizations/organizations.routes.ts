@@ -9,10 +9,15 @@ router.use(protect);
 
 // Any authenticated user can access these
 router.get('/my-org', orgController.getMyOrganization);
+router.get('/members', orgController.getOrganizationMembers);
 router.post('/', orgController.createOrganization);
 router.post('/join', orgController.joinOrganization);
 
 // Get specific org by ID
 router.get('/:id', orgController.getOrganization);
+
+// Update/Leave specific org
+router.put('/:id', orgController.updateOrganization);
+router.delete('/leave', orgController.leaveOrganization);
 
 export default router;
