@@ -116,34 +116,43 @@ export class TransactionsService {
         const workbook = new ExcelJS.Workbook();
         const sheet = workbook.addWorksheet('Transactions Template');
 
+        // Column order: Date, Type, Category, Description, Amount
         sheet.columns = [
-            { header: 'Date (YYYY-MM-DD)', key: 'date', width: 20 },
-            { header: 'Amount', key: 'amount', width: 15 },
-            { header: 'Type (INCOME/EXPENSE)', key: 'type', width: 25 },
-            { header: 'Category', key: 'category', width: 25 },
-            { header: 'Description', key: 'description', width: 40 }
+            { header: 'Date (YYYY-MM-DD)', key: 'date',        width: 20 },
+            { header: 'Type (INCOME/EXPENSE)', key: 'type',   width: 22 },
+            { header: 'Category',             key: 'category', width: 25 },
+            { header: 'Description',          key: 'description', width: 40 },
+            { header: 'Amount',               key: 'amount',   width: 15 },
         ];
 
-        // Style the header
-        sheet.getRow(1).font = { bold: true };
-        sheet.getRow(1).fill = {
+        // Style the header row
+        const headerRow = sheet.getRow(1);
+        headerRow.font = { bold: true };
+        headerRow.fill = {
             type: 'pattern',
             pattern: 'solid',
             fgColor: { argb: 'FFE0E0E0' }
         };
 
-        // Add a sample row to guide the user
+        // Add sample rows to guide the user
         sheet.addRow({
             date: new Date().toISOString().split('T')[0],
-            amount: 1500,
             type: 'EXPENSE',
             category: 'Marketing',
-            description: 'Monthly ad spend'
+            description: 'Monthly ad spend',
+            amount: 1500,
+        });
+        sheet.addRow({
+            date: new Date().toISOString().split('T')[0],
+            type: 'INCOME',
+            category: 'Sales',
+            description: 'Product sale',
+            amount: 5000,
         });
 
-        // Add data validation to the Type column
+        // Data validation on column B (Type) — rows 2 to 1000
         for (let i = 2; i <= 1000; i++) {
-            sheet.getCell(`C${i}`).dataValidation = {
+            sheet.getCell(`B${i}`).dataValidation = {
                 type: 'list',
                 allowBlank: false,
                 formulae: ['"INCOME,EXPENSE"']
@@ -164,43 +173,46 @@ export class TransactionsService {
         let rowCount = 0;
 
         // Start reading from row 2 (skipping header)
+        // Column order: 1=Date, 2=Type, 3=Category, 4=Description, 5=Amount
         sheet.eachRow((row: Row, rowNumber: number) => {
             if (rowNumber === 1) return; // Skip header
 
-            const dateVal = row.getCell(1).value;
-            const amountVal = row.getCell(2).value;
-            const typeVal = row.getCell(3).value?.toString().toUpperCase();
-            const categoryVal = row.getCell(4).value?.toString() || 'General';
-            const descriptionVal = row.getCell(5).value?.toString() || '';
+            const dateVal        = row.getCell(1).value;
+            const typeVal        = row.getCell(2).value?.toString().toUpperCase().trim();
+            const categoryVal    = row.getCell(3).value?.toString().trim() || 'General';
+            const descriptionVal = row.getCell(4).value?.toString().trim() || '';
+            const amountVal      = row.getCell(5).value;
 
-            // Skip empty rows
+            // Skip completely empty rows
             if (!dateVal && !amountVal && !typeVal) return;
 
-            // Validate basic required fields for the row
+            // Validate amount
             if (!amountVal || isNaN(Number(amountVal))) {
                 throw new Error(`Row ${rowNumber}: Invalid amount "${amountVal}"`);
             }
+
+            // Validate type
             if (typeVal !== 'INCOME' && typeVal !== 'EXPENSE') {
-                throw new Error(`Row ${rowNumber}: Type must be INCOME or EXPENSE`);
+                throw new Error(`Row ${rowNumber}: Type must be INCOME or EXPENSE (got "${typeVal}")`);
             }
 
+            // Parse date — handles both native Excel date objects and strings
             let parsedDate = new Date();
             if (dateVal) {
-                // Handle native excel dates or strings
                 parsedDate = dateVal instanceof Date ? dateVal : new Date(dateVal.toString());
                 if (isNaN(parsedDate.getTime())) {
-                     throw new Error(`Row ${rowNumber}: Invalid date format`);
+                    throw new Error(`Row ${rowNumber}: Invalid date format "${dateVal}"`);
                 }
             }
 
             transactionsData.push({
                 userId,
                 organizationId: organizationId || null,
-                amount: Number(amountVal),
+                amount: Math.abs(Number(amountVal)),
                 currency: 'USD',
                 type: typeVal,
-                category: categoryVal.trim(),
-                description: descriptionVal.trim(),
+                category: categoryVal,
+                description: descriptionVal,
                 date: parsedDate,
             });
             rowCount++;

@@ -15,6 +15,8 @@ export default function TransactionsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [showImportForm, setShowImportForm] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<{ count: number; errors?: string[] } | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [form, setForm] = useState({
@@ -90,22 +92,30 @@ export default function TransactionsPage() {
     if (!file) return;
 
     setImporting(true);
+    setImportResult(null);
+    setImportError(null);
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/transactions/import/upload`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/transactions/import/upload`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData
       });
-      setShowImportForm(false);
-      fetchTransactions();
-    } catch (err) {
+      const json = await res.json();
+      if (!res.ok) {
+        setImportError(json?.message || "Import failed. Please check your file and try again.");
+      } else {
+        const count = json?.data?.importedCount ?? 0;
+        setImportResult({ count });
+        fetchTransactions();
+      }
+    } catch (err: any) {
       console.error("Import failed", err);
+      setImportError(err?.message || "Network error. Please try again.");
     } finally {
       setImporting(false);
-      // Reset input
       e.target.value = '';
     }
   };
@@ -305,17 +315,42 @@ export default function TransactionsPage() {
                 Bulk Import
               </h2>
               <button
-                onClick={() => setShowImportForm(false)}
+                onClick={() => { setShowImportForm(false); setImportResult(null); setImportError(null); }}
                 className="text-foreground/40 hover:text-foreground"
               >
                 <X size={20} />
               </button>
             </div>
+
+            {/* Success banner */}
+            {importResult && (
+              <div className="mb-4 flex items-start gap-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-3">
+                <span className="text-emerald-400 text-lg leading-none mt-0.5">✓</span>
+                <div>
+                  <p className="text-sm font-semibold text-emerald-400">
+                    {importResult.count} transaction{importResult.count !== 1 ? 's' : ''} imported successfully!
+                  </p>
+                  <p className="text-xs text-emerald-400/70 mt-0.5">Your transaction list has been updated.</p>
+                </div>
+              </div>
+            )}
+
+            {/* Error banner */}
+            {importError && (
+              <div className="mb-4 flex items-start gap-3 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+                <span className="text-red-400 text-lg leading-none mt-0.5">✕</span>
+                <div>
+                  <p className="text-sm font-semibold text-red-400">Import failed</p>
+                  <p className="text-xs text-red-400/70 mt-0.5">{importError}</p>
+                </div>
+              </div>
+            )}
             
             <div className="space-y-6">
               <div className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-4 text-center">
                 <p className="text-sm text-foreground/70 mb-3">
-                  First, download the correct Excel template. It contains exactly the columns required by Finora.
+                  Download the template — it has the exact columns Finora expects:
+                  <span className="block mt-1 text-foreground/50 font-mono text-xs">Date · Type · Category · Description · Amount</span>
                 </p>
                 <button
                   onClick={handleDownloadTemplate}
@@ -329,19 +364,29 @@ export default function TransactionsPage() {
                 <label className="text-sm font-medium text-foreground mb-3 block">
                   Upload Filled Template
                 </label>
-                <label className="border-2 border-dashed border-white/[0.1] hover:border-primary/50 bg-white/[0.02] hover:bg-primary/5 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all group">
+                <label className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all group ${
+                  importResult
+                    ? 'border-emerald-500/30 bg-emerald-500/5 hover:border-emerald-500/50'
+                    : 'border-white/[0.1] bg-white/[0.02] hover:border-primary/50 hover:bg-primary/5'
+                }`}>
                   {importing ? (
                     <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                  ) : importResult ? (
+                    <>
+                      <span className="text-3xl mb-2">✓</span>
+                      <span className="text-sm text-emerald-400 font-medium">{importResult.count} rows imported</span>
+                      <span className="text-xs text-foreground/40 mt-1">Click to upload another file</span>
+                    </>
                   ) : (
                     <>
                       <Upload size={28} className="text-foreground/40 group-hover:text-primary mb-3 transition-colors" />
                       <span className="text-sm text-foreground/80 font-medium">Click to upload .xlsx file</span>
-                      <span className="text-xs text-foreground/40 mt-1">Maximum 1000 rows</span>
+                      <span className="text-xs text-foreground/40 mt-1">Columns: Date, Type, Category, Description, Amount</span>
                     </>
                   )}
                   <input
                     type="file"
-                    accept=".xlsx"
+                    accept=".xlsx,.xls"
                     className="hidden"
                     onChange={handleImport}
                     disabled={importing}
