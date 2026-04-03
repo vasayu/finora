@@ -255,7 +255,7 @@ export default function PnLPage() {
                     paddingAngle={2}
                     dataKey="value"
                     stroke="none"
-                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                    label={({ name, percent }) => `${name} (${((percent || 0) * 100).toFixed(0)}%)`}
                     labelLine={{ stroke: 'rgba(255,255,255,0.2)', strokeWidth: 1 }}
                   >
                     {expenseData.map((entry, index) => (
