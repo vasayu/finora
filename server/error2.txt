@@ -1,0 +1,4 @@
+[1m[31mError: [39m[22m
+EPERM: operation not permitted, rename 'C:\WebD\Finora\finora\server\node_modules\.prisma\client\query_engine-windows.dll.node.tmp23800' -> 'C:\WebD\Finora\finora\server\node_modules\.prisma\client\query_engine-windows.dll.node'
+
+
