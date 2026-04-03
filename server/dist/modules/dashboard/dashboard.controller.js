@@ -9,12 +9,9 @@ class DashboardController {
         this.dashboardService = new dashboard_service_1.DashboardService();
     }
     getSummary = (0, catchAsync_1.catchAsync)(async (req, res) => {
-        const { organizationId } = req.query;
-        if (!organizationId) {
-            throw { statusCode: 400, message: 'organizationId is required' };
-        }
-        const summary = await this.dashboardService.getSummary(organizationId, req.user.id);
-        res.status(200).json({ status: 'success', data: { summary } });
+        const organizationId = req.query.organizationId;
+        const summary = await this.dashboardService.getSummary(req.user.id, organizationId);
+        res.status(200).json({ status: 'success', data: summary });
     });
 }
 exports.DashboardController = DashboardController;

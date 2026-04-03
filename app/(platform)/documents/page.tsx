@@ -56,7 +56,7 @@ export default function DocumentsPage() {
   };
 
   const statusIcon = (status: string) => {
-    if (status === "PROCESSED")
+    if (status === "COMPLETED")
       return <CheckCircle size={14} className="text-emerald-400" />;
     return <Clock size={14} className="text-amber-400" />;
   };
@@ -135,7 +135,8 @@ export default function DocumentsPage() {
             {documents.map((doc) => (
               <div
                 key={doc.id}
-                className="flex items-center justify-between px-6 py-4 hover:bg-white/[0.02] transition-colors"
+                onClick={() => doc.fileUrl && window.open(doc.fileUrl, "_blank")}
+                className="flex items-center justify-between px-6 py-4 hover:bg-white/[0.02] transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">

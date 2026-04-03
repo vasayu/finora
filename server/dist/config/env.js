@@ -12,8 +12,6 @@ const envSchema = zod_1.z.object({
     NODE_ENV: zod_1.z.enum(['development', 'production', 'test']).default('development'),
     PORT: zod_1.z.string().default('5000'),
     DATABASE_URL: zod_1.z.string(),
-    REDIS_URL: zod_1.z.string(),
-    RABBITMQ_URL: zod_1.z.string(),
     JWT_SECRET: zod_1.z.string(),
     JWT_EXPIRES_IN: zod_1.z.string().default('15m'),
     JWT_REFRESH_SECRET: zod_1.z.string(),
@@ -21,6 +19,10 @@ const envSchema = zod_1.z.object({
     CLOUDINARY_CLOUD_NAME: zod_1.z.string(),
     CLOUDINARY_API_KEY: zod_1.z.string(),
     CLOUDINARY_API_SECRET: zod_1.z.string(),
+    OPENAI_API_KEY: zod_1.z.string().default(''),
+    RAG_SERVICE_URL: zod_1.z.string().default('http://127.0.0.1:4000'),
+    PINATA_APIKEY: zod_1.z.string(),
+    PINATA_SECRETKEY: zod_1.z.string(),
 });
 const _env = envSchema.safeParse(process.env);
 if (!_env.success) {

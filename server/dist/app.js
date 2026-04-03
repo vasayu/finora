@@ -17,6 +17,10 @@ const transactions_routes_1 = __importDefault(require("./modules/transactions/tr
 const financials_routes_1 = __importDefault(require("./modules/financials/financials.routes"));
 const dashboard_routes_1 = __importDefault(require("./modules/dashboard/dashboard.routes"));
 const alerts_routes_1 = __importDefault(require("./modules/alerts/alerts.routes"));
+const ai_routes_1 = __importDefault(require("./modules/ai/ai.routes"));
+const stocks_routes_1 = __importDefault(require("./modules/stocks/stocks.routes"));
+const rag_routes_1 = __importDefault(require("./modules/rag/rag.routes"));
+const watchlist_routes_1 = __importDefault(require("./modules/watchlist/watchlist.routes"));
 const app = (0, express_1.default)();
 app.use((0, helmet_1.default)());
 app.use((0, cors_1.default)());
@@ -39,6 +43,10 @@ app.use('/api/v1/transactions', transactions_routes_1.default);
 app.use('/api/v1/financials', financials_routes_1.default);
 app.use('/api/v1/dashboard', dashboard_routes_1.default);
 app.use('/api/v1/alerts', alerts_routes_1.default);
+app.use('/api/v1/ai', ai_routes_1.default);
+app.use('/api/v1/stocks', stocks_routes_1.default);
+app.use('/api/v1/rag', rag_routes_1.default);
+app.use('/api/v1/watchlist', watchlist_routes_1.default);
 // Global Error Handler
 app.use(error_middleware_1.errorHandler);
 exports.default = app;
