@@ -25,6 +25,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Blocks,
+  MessageCircle,
+  PiggyBank,
 } from "lucide-react";
 import { useAuth } from "@/Components/AuthProvider";
 
@@ -73,6 +75,7 @@ const ALL_NAV_ITEMS = [
   { label: "P&L Report", href: "/reports/pnl", icon: TrendingUp, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
   { label: "Balance Sheet", href: "/reports/balance-sheet", icon: Scale, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
   { label: "AI Assistant", href: "/ai", icon: Bot, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
+  { label: "Budgets", href: "/budgets", icon: PiggyBank, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
   { label: "Integrations", href: "/integrations", icon: Blocks, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
   { label: "Organization", href: "/organization", icon: Building2, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
   { label: "Profile", href: "/profile", icon: User, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },

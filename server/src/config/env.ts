@@ -21,6 +21,7 @@ const envSchema = z.object({
     RABBITMQ_URL: z.string().optional(),
     PINATA_APIKEY: z.string(),
     PINATA_SECRETKEY: z.string(),
+    TELEGRAM_BOT_TOKEN: z.string().optional(),
 });
 
 const _env = envSchema.safeParse(process.env);

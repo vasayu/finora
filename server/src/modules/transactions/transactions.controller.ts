@@ -30,7 +30,7 @@ export class TransactionsController {
     deleteTransaction = catchAsync(async (req: Request, res: Response) => {
         const { id } = req.params;
         await this.txService.deleteTransaction(id, req.user.id, req.user.role);
-        res.status(204).json({ status: 'success', data: null });
+        res.status(200).json({ status: 'success', data: null });
     });
 
     downloadTemplate = catchAsync(async (req: Request, res: Response) => {

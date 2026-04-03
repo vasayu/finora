@@ -1,6 +1,0 @@
-Date,Description,Category,Amount (INR),Payment Method
-2026-03-01,AWS Hosting,Expense,-5000,UPI
-2026-03-02,Stripe Payment,Revenue,15000,Stripe
-2026-03-03,Office Supplies,Expense,-1200,Card
-2026-03-04,Client Payment,Revenue,20000,Bank Transfer
-2026-03-05,Software Subscription,Expense,-800,Card
