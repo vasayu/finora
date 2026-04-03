@@ -22,7 +22,7 @@ services:
     networks:
       - finora-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d finora"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d finora" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -80,21 +80,20 @@ services:
     environment:
       NODE_ENV: production
       PORT: 5000
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/finora?schema=public
       RAG_SERVICE_URL: http://rag-service:8000
       REDIS_URL: redis://redis:6379
       RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
     ports:
-      - "5000:5000"
+      - "5001:5000"
+
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_started
       rabbitmq:
         condition: service_started
       rag-service:
         condition: service_started
+
     networks:
       - finora-network
     volumes:
@@ -106,14 +105,16 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
+        - NEXT_PUBLIC_API_URL=http://localhost:5001/api/v1
+
     container_name: finora-frontend
     restart: always
     env_file:
       - .env.docker
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: http://localhost:5000/api/v1
+      NEXT_PUBLIC_API_URL: http://localhost:5001/api/v1
+
     ports:
       - "3000:3000"
     depends_on:
