@@ -8,6 +8,7 @@ const registerSchema = z.object({
     password: z.string().min(8),
     firstName: z.string().min(1),
     lastName: z.string().min(1),
+    phoneNumber: z.string().min(5),
 
     role: z.enum(['EMPLOYEE', 'ACCOUNTANT', 'CFO', 'MANAGER', 'INVESTOR']).default('EMPLOYEE'),
 });

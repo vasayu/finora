@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "@/Components/AuthProvider";
 import { api } from "@/lib/api";
 import {
-  DollarSign,
+  IndianRupee,
   TrendingUp,
   TrendingDown,
   Activity,
@@ -85,7 +85,7 @@ function getCardsForRole(role: string, data: DashboardData | null) {
         {
           label: "My Income",
           value: data?.totalRevenue || 0,
-          icon: DollarSign,
+          icon: IndianRupee,
           color: "text-emerald-400",
           bg: "bg-emerald-500/10",
           trend: revTrendStr,
@@ -119,7 +119,7 @@ function getCardsForRole(role: string, data: DashboardData | null) {
         {
           label: "Total Revenue",
           value: data?.totalRevenue || 0,
-          icon: DollarSign,
+          icon: IndianRupee,
           color: "text-emerald-400",
           bg: "bg-emerald-500/10",
           trend: revTrendStr,
@@ -183,7 +183,7 @@ function getCardsForRole(role: string, data: DashboardData | null) {
         {
           label: "Total Revenue",
           value: data?.totalRevenue || 0,
-          icon: DollarSign,
+          icon: IndianRupee,
           color: "text-blue-400",
           bg: "bg-blue-500/10",
           trend: revTrendStr,
@@ -396,7 +396,7 @@ export default function DashboardPage() {
             </div>
             <p className="text-2xl font-bold text-foreground">
               {card.isCurrency
-                ? `$${card.value.toLocaleString()}`
+                ? `₹${card.value.toLocaleString()}`
                 : card.value}
             </p>
             {card.trend && card.trend !== "No recent income" && card.trend !== "No recent expense" && (
@@ -514,7 +514,7 @@ export default function DashboardPage() {
                   <span
                     className={`text-sm font-semibold ${tx.type === "INCOME" ? "text-emerald-400" : "text-red-400"}`}
                   >
-                    {tx.type === "INCOME" ? "+" : "-"}$
+                    {tx.type === "INCOME" ? "+" : "-"}₹
                     {tx.amount?.toLocaleString()}
                   </span>
                 </div>

@@ -24,7 +24,7 @@ export default function TransactionsPage() {
     type: "EXPENSE",
     category: "",
     description: "",
-    currency: "USD",
+    currency: "INR",
   });
 
   const fetchTransactions = async () => {
@@ -63,7 +63,7 @@ export default function TransactionsPage() {
         type: "EXPENSE",
         category: "",
         description: "",
-        currency: "USD",
+        currency: "INR",
       });
       setEditingId(null);
       setShowForm(false);
@@ -185,7 +185,7 @@ export default function TransactionsPage() {
                 type: "EXPENSE",
                 category: "",
                 description: "",
-                currency: "USD",
+                currency: "INR",
               });
               setShowForm(true);
             }}
@@ -529,7 +529,7 @@ export default function TransactionsPage() {
                   <td
                     className={`px-6 py-4 text-sm font-semibold text-right ${tx.type === "INCOME" ? "text-emerald-400" : "text-red-400"}`}
                   >
-                    {tx.type === "INCOME" ? "+" : "-"}$
+                    {tx.type === "INCOME" ? "+" : "-"}₹
                     {tx.amount?.toLocaleString()}
                   </td>
                   <td className="px-6 py-4 text-center">

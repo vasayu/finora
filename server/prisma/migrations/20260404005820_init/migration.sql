@@ -14,7 +14,10 @@ CREATE TABLE "User" (
     "password" TEXT NOT NULL,
     "firstName" TEXT NOT NULL,
     "lastName" TEXT NOT NULL,
+    "phoneNumber" TEXT NOT NULL,
+    "encryptionKey" TEXT,
     "role" "Role" NOT NULL DEFAULT 'EMPLOYEE',
+    "position" TEXT,
     "organizationId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -26,8 +29,16 @@ CREATE TABLE "User" (
 CREATE TABLE "Organization" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "domain" TEXT,
     "inviteCode" TEXT NOT NULL,
     "ownerId" TEXT NOT NULL,
+    "revenueRange" TEXT,
+    "fundingStage" TEXT,
+    "companyType" TEXT,
+    "stockTicker" TEXT,
+    "headquarters" TEXT,
+    "size" TEXT,
+    "linkedinUrl" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -178,8 +189,68 @@ CREATE TABLE "AuditTrail" (
     CONSTRAINT "AuditTrail_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "Watchlist" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "symbol" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "addedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Watchlist_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "OrgWatchlist" (
+    "id" TEXT NOT NULL,
+    "organizationId" TEXT NOT NULL,
+    "symbol" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "addedByUserId" TEXT NOT NULL,
+    "addedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "OrgWatchlist_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Budget" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "category" TEXT,
+    "period" TEXT NOT NULL DEFAULT 'MONTHLY',
+    "userId" TEXT NOT NULL,
+    "organizationId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Budget_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Settlement" (
+    "id" TEXT NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "byUser" TEXT NOT NULL,
+    "category" TEXT NOT NULL,
+    "remarks" TEXT,
+    "towards" TEXT,
+    "date" TEXT NOT NULL,
+    "time" TEXT NOT NULL,
+    "approved" BOOLEAN NOT NULL DEFAULT false,
+    "userId" TEXT,
+    "organizationId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Settlement_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Organization_domain_key" ON "Organization"("domain");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Organization_inviteCode_key" ON "Organization"("inviteCode");
@@ -201,6 +272,12 @@ CREATE UNIQUE INDEX "InvestorProfile_userId_key" ON "InvestorProfile"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "FinancialRecord_organizationId_month_year_key" ON "FinancialRecord"("organizationId", "month", "year");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Watchlist_userId_symbol_key" ON "Watchlist"("userId", "symbol");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "OrgWatchlist_organizationId_symbol_key" ON "OrgWatchlist"("organizationId", "symbol");
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -234,3 +311,21 @@ ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_organizationId_fkey" FOREI
 
 -- AddForeignKey
 ALTER TABLE "AuditTrail" ADD CONSTRAINT "AuditTrail_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Watchlist" ADD CONSTRAINT "Watchlist_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "OrgWatchlist" ADD CONSTRAINT "OrgWatchlist_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Budget" ADD CONSTRAINT "Budget_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Budget" ADD CONSTRAINT "Budget_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Settlement" ADD CONSTRAINT "Settlement_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Settlement" ADD CONSTRAINT "Settlement_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE CASCADE ON UPDATE CASCADE;

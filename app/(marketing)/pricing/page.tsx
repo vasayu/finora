@@ -7,7 +7,7 @@ export default function PricingPage() {
   const plans = [
     {
       name: "Startup",
-      price: "$29",
+      price: "₹2,499",
       period: "/month",
       description: "Perfect for small teams and early-stage startups.",
       features: [
@@ -21,7 +21,7 @@ export default function PricingPage() {
     },
     {
       name: "Growth",
-      price: "$99",
+      price: "₹8,499",
       period: "/month",
       description: "Ideal for growing businesses that need more power.",
       features: [
@@ -36,7 +36,7 @@ export default function PricingPage() {
     },
     {
       name: "Enterprise",
-      price: "$299",
+      price: "₹24,999",
       period: "/month",
       description: "For large organizations with complex needs.",
       features: [
