@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import { Upload, FileText, File, CheckCircle, Clock } from "lucide-react";
 
 export default function DocumentsPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [documents, setDocuments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -15,7 +15,8 @@ export default function DocumentsPage() {
 
   const fetchDocuments = async () => {
     try {
-      const res = await api("/documents", { token });
+      const qs = (user as any)?.organizationId ? `?organizationId=${(user as any).organizationId}` : "";
+      const res = await api(`/documents${qs}`, { token });
       const docs = res.data?.documents || res.data || [];
       setDocuments(Array.isArray(docs) ? docs : []);
     } catch {
@@ -34,6 +35,9 @@ export default function DocumentsPage() {
     try {
       const formData = new FormData();
       formData.append("file", file);
+      if ((user as any)?.organizationId) {
+        formData.append("organizationId", (user as any).organizationId);
+      }
       await api("/documents/upload", {
         method: "POST",
         token,

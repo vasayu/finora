@@ -32,6 +32,12 @@ export async function api<T = any>(
     const data = await res.json();
 
     if (!res.ok) {
+        if (res.status === 401 && typeof window !== "undefined") {
+            // Token is invalid or expired
+            localStorage.removeItem("finora_token");
+            localStorage.removeItem("finora_user");
+            window.location.href = "/login";
+        }
         throw new Error(data.message || `Request failed with status ${res.status}`);
     }
 

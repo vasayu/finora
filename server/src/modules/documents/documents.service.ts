@@ -22,9 +22,10 @@ const EXCEL_MIME_TYPES = [
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
     'application/vnd.ms-excel',                                          // .xls
     'application/octet-stream',                                          // generic binary (often used for xlsx)
+    'text/csv',                                                          // .csv
 ];
 
-const EXCEL_EXTENSIONS = ['.xlsx', '.xls'];
+const EXCEL_EXTENSIONS = ['.xlsx', '.xls', '.csv'];
 
 export class DocumentsService {
     private repository: DocumentsRepository;
@@ -47,12 +48,16 @@ export class DocumentsService {
      * The first row is treated as a header and skipped.
      */
     private async parseExcelTransactions(
-        buffer: Buffer,
+        filePath: string,
         userId: string,
         organizationId?: string
     ): Promise<{ transactions: any[]; errors: string[] }> {
         const workbook = new ExcelJS.Workbook();
-        await workbook.xlsx.load(buffer as unknown as ExcelJS.Buffer);
+        if (filePath.toLowerCase().endsWith('.csv')) {
+            await workbook.csv.readFile(filePath);
+        } else {
+            await workbook.xlsx.readFile(filePath);
+        }
         const sheet = workbook.worksheets[0];
 
         if (!sheet) {
@@ -235,7 +240,7 @@ export class DocumentsService {
                 logger.info(`Excel file detected (${file.originalname}), extracting transactions...`);
 
                 const { transactions, errors } = await this.parseExcelTransactions(
-                    file.buffer,
+                    filePath,
                     userId,
                     organizationId
                 );

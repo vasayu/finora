@@ -20,6 +20,47 @@ export interface BalanceSheetResult {
     asOfDate: string;
 }
 
+export type ChangeFlag = 'LARGE_CHANGE' | 'ZERO_TO_NONZERO' | 'NEGATIVE_UNEXPECTED';
+
+export interface CompareRow {
+    section: string;
+    subSection: string;
+    account: string;
+    current: number;
+    previous: number;
+    absChange: number;
+    pctChange: number | null; // null when previous is 0
+    flags: ChangeFlag[];
+    impactScore: number;
+    status: 'HEALTHY' | 'RISK' | 'CRITICAL';
+    isSubtotal?: boolean;
+    isTotal?: boolean;
+}
+
+export interface BalanceSheetComparisonResult {
+    rows: CompareRow[];
+    asOfDate: string;
+    prevDate: string;
+    currentTotals: { assets: number; liabilities: number; equity: number; balanced: boolean };
+    prevTotals: { assets: number; liabilities: number; equity: number; balanced: boolean };
+}
+
+export interface AccountDrillTransaction {
+    id: string;
+    date: string;
+    type: string;
+    category: string;
+    description: string | null;
+    amount: number;
+    currency: string;
+}
+
+export interface AccountDrillResult {
+    account: string;
+    transactions: AccountDrillTransaction[];
+    total: number;
+}
+
 export class FinancialsService {
     async getPnL(userId: string, organizationId?: string, startDate?: string, endDate?: string) {
         const where: any = organizationId ? { organizationId } : { userId };
@@ -290,6 +331,168 @@ export class FinancialsService {
             totalEquity,
             balanced: Math.abs(totalAssets - (totalLiabilities + totalEquity)) < 0.01,
             asOfDate: dateLimit.toISOString().split('T')[0],
+        };
+    }
+
+    /**
+     * Compare two balance sheet snapshots and return enriched rows with variance analysis.
+     */
+    async getBalanceSheetComparison(
+        userId: string,
+        organizationId?: string,
+        asOfDate?: string,
+        prevDate?: string,
+    ): Promise<BalanceSheetComparisonResult> {
+        // Resolve dates
+        const currentDate = asOfDate || new Date().toISOString().split('T')[0];
+
+        // Default: 1 calendar month before currentDate
+        let previousDate = prevDate;
+        if (!previousDate) {
+            const d = new Date(currentDate);
+            d.setMonth(d.getMonth() - 1);
+            previousDate = d.toISOString().split('T')[0];
+        }
+
+        const [current, previous] = await Promise.all([
+            this.getBalanceSheet(userId, organizationId, currentDate),
+            this.getBalanceSheet(userId, organizationId, previousDate),
+        ]);
+
+        // Index previous rows by account name
+        const prevMap = new Map<string, number>();
+        for (const r of previous.rows) {
+            prevMap.set(r.account, r.balance);
+        }
+
+        // Accounts where a negative value is unexpected (asset accounts)
+        const unexpectedNegativeAccounts = new Set([
+            'Cash & Cash Equivalents',
+            'Accounts Receivable',
+            'Inventory',
+            'Prepaid Expenses',
+            'Property, Plant & Equipment',
+            'Intangible Assets',
+        ]);
+
+        const rows: CompareRow[] = current.rows.map((r) => {
+            const prev = prevMap.get(r.account) ?? 0;
+            const absChange = r.balance - prev;
+            const pctChange = prev !== 0 ? (absChange / Math.abs(prev)) * 100 : null;
+
+            const flags: ChangeFlag[] = [];
+            if (pctChange !== null && Math.abs(pctChange) > 20) flags.push('LARGE_CHANGE');
+            if (prev === 0 && r.balance !== 0) flags.push('ZERO_TO_NONZERO');
+            if (unexpectedNegativeAccounts.has(r.account) && r.balance < 0) flags.push('NEGATIVE_UNEXPECTED');
+
+            // CFO Insight Enhancements
+            let weight = 0.5; 
+            if (['Cash & Cash Equivalents', 'Accounts Receivable'].includes(r.account)) {
+                weight = 1.0;
+            } else if (['Accounts Payable', 'Accrued Expenses', 'Short-Term Debt', 'Long-Term Debt'].includes(r.account)) {
+                weight = 0.8;
+            }
+            const impactScore = r.isTotal || r.isSubtotal ? 0 : Math.round(Math.abs(absChange) * weight * 100) / 100;
+
+            let status: 'HEALTHY' | 'RISK' | 'CRITICAL' = 'HEALTHY';
+            if (!r.isSubtotal && !r.isTotal) {
+                if (unexpectedNegativeAccounts.has(r.account) && r.balance < 0) {
+                    status = 'CRITICAL'; 
+                } else if (pctChange !== null && Math.abs(pctChange) > 500) {
+                    status = 'CRITICAL'; 
+                } else if (r.section === 'LIABILITIES' && pctChange !== null && pctChange > 100) {
+                    status = 'CRITICAL'; 
+                } else if (r.section === 'LIABILITIES' && pctChange !== null && pctChange > 20) {
+                    status = 'RISK'; 
+                } else if (r.account === 'Accounts Receivable' && pctChange !== null && pctChange > 20) {
+                    status = 'RISK'; 
+                } else if (r.section === 'LIABILITIES' && prev === 0 && r.balance > 0) {
+                    status = 'RISK'; 
+                } else if (r.section === 'ASSETS' && pctChange !== null && pctChange < -20) {
+                    status = 'RISK'; 
+                }
+            }
+
+            return {
+                section: r.section,
+                subSection: r.subSection,
+                account: r.account,
+                current: r.balance,
+                previous: prev,
+                absChange: Math.round(absChange * 100) / 100,
+                pctChange: pctChange !== null ? Math.round(pctChange * 100) / 100 : null,
+                flags,
+                impactScore,
+                status,
+                isSubtotal: r.isSubtotal,
+                isTotal: r.isTotal,
+            };
+        });
+
+        return {
+            rows,
+            asOfDate: currentDate,
+            prevDate: previousDate,
+            currentTotals: {
+                assets: current.totalAssets,
+                liabilities: current.totalLiabilities,
+                equity: current.totalEquity,
+                balanced: current.balanced,
+            },
+            prevTotals: {
+                assets: previous.totalAssets,
+                liabilities: previous.totalLiabilities,
+                equity: previous.totalEquity,
+                balanced: previous.balanced,
+            },
+        };
+    }
+
+    /**
+     * Returns all transactions that classify to a specific BS account,
+     * up to asOfDate. Powers the drill-down feature.
+     */
+    async getAccountDrill(
+        userId: string,
+        account: string,
+        organizationId?: string,
+        asOfDate?: string,
+    ): Promise<AccountDrillResult> {
+        const dateLimit = asOfDate ? new Date(asOfDate) : new Date();
+        dateLimit.setHours(23, 59, 59, 999);
+
+        const where: any = organizationId
+            ? { organizationId, date: { lte: dateLimit } }
+            : { userId, date: { lte: dateLimit } };
+
+        const allTx = await prisma.transaction.findMany({
+            where,
+            orderBy: { date: 'desc' },
+        });
+
+        // Special case: Retained Earnings = all income - all expense
+        const matchedTx = account === 'Retained Earnings'
+            ? allTx
+            : allTx.filter((tx) => classifyTransaction(tx.category, tx.type as 'INCOME' | 'EXPENSE') === account);
+
+        let total = 0;
+        for (const tx of matchedTx) {
+            if (tx.type === 'INCOME') total += tx.amount;
+            else total -= tx.amount;
+        }
+
+        return {
+            account,
+            transactions: matchedTx.map((tx) => ({
+                id: tx.id,
+                date: tx.date.toISOString().split('T')[0],
+                type: tx.type,
+                category: tx.category,
+                description: tx.description,
+                amount: tx.amount,
+                currency: tx.currency,
+            })),
+            total: Math.round(total * 100) / 100,
         };
     }
 

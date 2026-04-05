@@ -34,14 +34,15 @@ const COLORS = [
 ];
 
 export default function PnLPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPnL = async () => {
       try {
-        const res = await api("/financials/pnl", { token });
+        const qs = (user as any)?.organizationId ? `?organizationId=${(user as any).organizationId}` : "";
+        const res = await api(`/financials/pnl${qs}`, { token });
         setData(res.data);
       } catch {
         setData(null);
