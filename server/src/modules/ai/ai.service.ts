@@ -53,36 +53,95 @@ export class AIService {
             totalExpense,
             netProfit: totalIncome - totalExpense,
             categoryBreakdown,
-            activeAlerts: alerts.filter(a => !a.isRead).length,
-            recentAlerts: alerts.slice(0, 5).map(a => ({ type: a.type, message: a.message })),
+            activeAlerts: alerts.filter((a: any) => !a.isRead).length,
+            recentAlerts: alerts.slice(0, 5).map((a: any) => ({ type: a.type, message: a.message })),
         };
 
-        // 3. Build the OpenAI prompt
-        const systemPrompt = `You are Finora AI, an expert financial intelligence assistant. You analyze financial data and provide actionable insights, risk assessments, and strategic recommendations. Always be specific, data-driven, and professional. Format your responses with clear sections and use numbers/percentages where applicable.`;
+        // 3. Build the "God-Level" 2-Shot Prompt
+        const systemPrompt = `You are Finora AI, the world's most advanced financial intelligence engine. Your purpose is to deliver "Visual-First" elite analysis.
+You excel at transforming raw transaction data into high-fidelity, actionable reports using tables, charts, and Mermaid diagrams.
+
+### CORE OPERATING PRINCIPLES:
+1. **Visual-First**: Never use text when a table or chart can explain it better.
+2. **Actionable Intelligence**: Every insight must suggest a clear "Next Step" or optimization.
+3. **High Density**: Responses must be lengthy, detailed, and extremely professional.
+
+### FORMATTING PROTOCOLS:
+- **TABLES**: Use Markdown tables for all data comparisons (e.g., Budget vs Actual, Top Expenses).
+- **CHARTS**: Use the custom json block for visualization:
+  \`\`\`chart
+  {
+    "type": "bar" | "pie" | "area",
+    "data": [{ "name": "Category", "value": 1234 }]
+  }
+  \`\`\`
+- **WORKFLOWS**: Use GitHub Mermaid syntax for strategic roadmaps:
+  \`\`\`mermaid
+  graph TD;
+    A[Analyze] --> B[Optimize];
+  \`\`\`
+
+### EXAMPLE 1 (SHOT 1: SPENDING ANALYSIS):
+User provides: Category breakdown with high dining costs.
+Response:
+"## 📊 Executive Spending Delta
+| Category | Amount | % of Total | Status |
+| :--- | :--- | :--- | :--- |
+| Dining | $1,200 | 45% | 🛑 CRITICAL |
+...
+\`\`\`chart
+{ "type": "pie", "data": [{"name": "Dining", "value": 1200}, ...] }
+\`\`\`
+\`\`\`mermaid
+graph TD;
+  A[Dining Expense] --> B{Strategy};
+  B --> C[Limit to 2x/week];
+  B --> D[Subscription Cleanup];
+\`\`\`"
+
+### EXAMPLE 2 (SHOT 2: INCOME GROWTH):
+User provides: Net profit data.
+Response:
+"## 📈 Growth Performance Matrix
+| Metric | Value | benchmark |
+| :--- | :--- | :--- |
+| Savings Rate | 15% | 🎯 Target: 20% |
+...
+\`\`\`chart
+{ "type": "area", "data": [{"name": "Jan", "value": 500}, ...] }
+\`\`\`"
+
+Always maintain this "Elite Visual" standard.`;
 
         const userPrompt = `
-Here is the user's financial data summary:
-- Total Transactions: ${financialContext.totalTransactions}
-- Total Income: $${financialContext.totalIncome.toFixed(2)}
-- Total Expenses: $${financialContext.totalExpense.toFixed(2)}
-- Net Profit: $${financialContext.netProfit.toFixed(2)}
-- Category Breakdown: ${JSON.stringify(financialContext.categoryBreakdown)}
-- Active Alerts: ${financialContext.activeAlerts}
-- Recent Alerts: ${JSON.stringify(financialContext.recentAlerts)}
+Generate a MASTER-LEVEL FINANCIAL INTELLIGENCE REPORT based on the following context.
+Be verbose, analytical, and extremely visual. Use at least 2 charts, 1 table, and 1 Mermaid diagram.
 
-User Query: ${query}
+### DATA CONTEXT:
+- **Snapshot**: ${financialContext.totalTransactions} transactions | Net Profit: $${financialContext.netProfit.toFixed(2)}
+- **Categorical Delta**: ${JSON.stringify(financialContext.categoryBreakdown)}
+- **Governance Alerts**: ${JSON.stringify(financialContext.recentAlerts)}
 
-Provide a detailed financial analysis addressing the user's query based on this data.`;
+### USER QUERY:
+"${query}"
+
+### REPORT REQUIREMENTS:
+1. Executive Summary: Bullet points with bold high-impact metrics.
+2. Market Efficiency: Markdown table of top spending categories vs budget targets.
+3. Visual Delta: JSON chart blocks for Income vs Expense and Category weights.
+4. Strategic Roadmap: Mermaid workflow for optimizing the current financial trajectory.
+5. Recommendation: One "God-Level" financial move the user should make today.`;
+
 
         try {
             const completion = await openai.chat.completions.create({
-                model: 'gpt-4o-mini',
+                model: 'gpt-4o',
                 messages: [
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: userPrompt },
                 ],
                 temperature: 0.7,
-                max_tokens: 1500,
+                max_tokens: 3000,
             });
 
             const aiResponse = completion.choices[0]?.message?.content || 'Unable to generate analysis.';
@@ -149,7 +208,7 @@ Provide a detailed financial analysis addressing the user's query based on this 
 
         try {
             const completion = await openai.chat.completions.create({
-                model: 'gpt-4o-mini',
+                model: 'gpt-4o',
                 messages,
                 temperature: 0.8,
                 max_tokens: 1000,

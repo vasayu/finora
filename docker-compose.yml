@@ -49,7 +49,9 @@ services:
     networks:
       - finora-network
 
-  # ── RAG Service (Python + FastAPI) ─────────
+
+
+  # ── RAG Service (FastAPI + LangChain + FAISS) ────────────────
   rag-service:
     build:
       context: ./rag-service
@@ -58,15 +60,39 @@ services:
     restart: always
     env_file:
       - ./rag-service/.env.docker
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/finora
     ports:
       - "8000:8000"
+    volumes:
+      - rag_data:/app/data
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - finora-network
-    volumes:
-      - rag_data:/app/data
+
+  # ── Agentic RAG Service (LangGraph multi-agent) ─────────────
+  agentic-rag:
+    build:
+      context: ./agentic-rag
+      dockerfile: Dockerfile
+    container_name: finora-agentic-rag
+    restart: always
+    env_file:
+      - ./agentic-rag/.env
+    environment:
+      BACKEND_BASE_URL: http://backend:5000/api/v1
+      INTERNAL_SECRET: finora-internal-secret
+    ports:
+      - "8001:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    networks:
+      - finora-network
 
   # ── Backend (Node.js + Express + Prisma) ───
   backend:
@@ -82,6 +108,8 @@ services:
       PORT: 5000
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/finora?schema=public
       RAG_SERVICE_URL: http://rag-service:8000
+      AGENTIC_RAG_URL: http://agentic-rag:8001
+      INTERNAL_SECRET: finora-internal-secret
       REDIS_URL: redis://redis:6379
       RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
     ports:
@@ -92,8 +120,6 @@ services:
       redis:
         condition: service_started
       rabbitmq:
-        condition: service_started
-      rag-service:
         condition: service_started
     networks:
       - finora-network
@@ -107,6 +133,7 @@ services:
       dockerfile: Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
+        - NEXT_PUBLIC_RAG_URL=http://localhost:8000
     container_name: finora-frontend
     restart: always
     env_file:
@@ -133,4 +160,6 @@ volumes:
   backend_uploads:
     driver: local
   rag_data:
+    driver: local
+  agentic_rag_data:
     driver: local

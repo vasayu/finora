@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   ArrowLeftRight,
   FileText,
-  BarChart3,
   ShieldAlert,
   Bot,
   User,
@@ -15,7 +14,6 @@ import {
   Box,
   TrendingUp,
   Scale,
-  Activity,
   Briefcase,
   Calculator,
   Crown,
@@ -23,12 +21,14 @@ import {
   PieChart,
   Building2,
   Blocks,
+  Newspaper,
+  LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/Components/AuthProvider";
 
 const ROLE_CONFIG: Record<
   string,
-  { label: string; color: string; bg: string; icon: any }
+  { label: string; color: string; bg: string; icon: LucideIcon }
 > = {
   EMPLOYEE: {
     label: "Employee",
@@ -70,7 +70,7 @@ const ALL_NAV_ITEMS = [
   { label: "Alerts", href: "/alerts", icon: ShieldAlert, roles: ["ACCOUNTANT", "CFO", "MANAGER"] },
   { label: "P&L Report", href: "/reports/pnl", icon: TrendingUp, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
   { label: "Balance Sheet", href: "/reports/balance-sheet", icon: Scale, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
-  { label: "Trading Terminal", href: "/terminal", icon: Activity, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
+  { label: "Market News", href: "/news", icon: Newspaper, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
   { label: "AI Assistant", href: "/ai", icon: Bot, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
   { label: "Integrations", href: "/integrations", icon: Blocks, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
   { label: "Organization", href: "/organization", icon: Building2, roles: ["EMPLOYEE", "ACCOUNTANT", "CFO", "MANAGER", "INVESTOR"] },
@@ -100,9 +100,9 @@ export default function Sidebar() {
   });
 
   return (
-    <aside className="fixed top-0 left-0 h-screen w-64 bg-[#0a0a0a] border-r border-white/[0.06] flex flex-col z-40">
+    <aside className="fixed top-0 left-0 h-screen w-64 bg-[#0a0a0a] border-r border-white/6 flex flex-col z-40">
       {/* Logo */}
-      <div className="px-6 py-5 border-b border-white/[0.06]">
+      <div className="px-6 py-5 border-b border-white/6">
         <Link href="/" className="flex items-center gap-2.5 group">
           <div className="text-primary group-hover:scale-110 transition-transform">
             <Box size={22} />
@@ -124,7 +124,7 @@ export default function Sidebar() {
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${isActive
                 ? "bg-primary/10 text-primary"
-                : "text-foreground/50 hover:text-foreground hover:bg-white/[0.04]"
+                : "text-foreground/50 hover:text-foreground hover:bg-white/4"
                 }`}
             >
               <item.icon size={18} />
@@ -135,9 +135,9 @@ export default function Sidebar() {
       </nav>
 
       {/* User Section */}
-      <div className="px-3 py-4 border-t border-white/[0.06]">
+      <div className="px-3 py-4 border-t border-white/6">
         <div className="flex items-center gap-3 px-3 py-2 mb-2">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-orange-400 flex items-center justify-center text-white text-xs font-bold shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-linear-to-br from-primary to-orange-400 flex items-center justify-center text-white text-xs font-bold shrink-0">
             {initials}
           </div>
           <div className="min-w-0">

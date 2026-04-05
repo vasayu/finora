@@ -4,6 +4,22 @@ import { catchAsync } from '../utils/catchAsync';
 import { prisma } from '../config/database';
 
 export const protect = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    // ── Internal microservice bypass ──────────────────────────────
+    const internalSecret = req.headers['x-internal-secret'];
+    if (internalSecret && internalSecret === process.env.INTERNAL_SECRET) {
+        const userId = req.headers['x-user-id'] as string;
+        if (!userId) {
+            return next({ statusCode: 401, message: 'Internal request missing x-user-id header' });
+        }
+        const serviceUser = await prisma.user.findUnique({ where: { id: userId } });
+        if (!serviceUser) {
+            return next({ statusCode: 401, message: 'User not found for internal request' });
+        }
+        req.user = serviceUser;
+        return next();
+    }
+
+    // ── Standard JWT auth ─────────────────────────────────────────
     let token;
 
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
