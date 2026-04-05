@@ -329,8 +329,9 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const qs = (user as any)?.organizationId ? `?organizationId=${(user as any).organizationId}` : "";
         const [dashRes, txRes] = await Promise.all([
-          api("/dashboard/summary", { token }).catch(() => ({
+          api(`/dashboard/summary${qs}`, { token }).catch(() => ({
             data: {
               totalRevenue: 0,
               totalExpenses: 0,
@@ -344,7 +345,7 @@ export default function DashboardPage() {
               serverUptime: "0m 0s",
             },
           })),
-          api("/transactions", { token }).catch(() => ({
+          api(`/transactions${qs}`, { token }).catch(() => ({
             data: { transactions: [] },
           })),
         ]);

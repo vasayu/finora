@@ -30,6 +30,32 @@ export class FinancialsController {
         res.status(200).json({ status: 'success', data: balanceSheet });
     });
 
+    getBalanceSheetComparison = catchAsync(async (req: Request, res: Response) => {
+        const { organizationId, asOfDate, prevDate } = req.query;
+        const result = await this.finService.getBalanceSheetComparison(
+            req.user.id,
+            organizationId as string | undefined,
+            asOfDate as string | undefined,
+            prevDate as string | undefined
+        );
+        res.status(200).json({ status: 'success', data: result });
+    });
+
+    getAccountDrill = catchAsync(async (req: Request, res: Response) => {
+        const { organizationId, asOfDate, account } = req.query;
+        if (!account) {
+            res.status(400).json({ status: 'error', message: 'account query param is required' });
+            return;
+        }
+        const result = await this.finService.getAccountDrill(
+            req.user.id,
+            account as string,
+            organizationId as string | undefined,
+            asOfDate as string | undefined
+        );
+        res.status(200).json({ status: 'success', data: result });
+    });
+
     exportBalanceSheet = catchAsync(async (req: Request, res: Response) => {
         const { organizationId, asOfDate } = req.query;
         const workbook = await this.finService.exportBalanceSheetExcel(

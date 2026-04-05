@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import { Plus, Search, X, Edit2, Trash2, Upload, Download } from "lucide-react";
 
 export default function TransactionsPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -29,7 +29,8 @@ export default function TransactionsPage() {
 
   const fetchTransactions = async () => {
     try {
-      const res = await api("/transactions", { token });
+      const qs = (user as any)?.organizationId ? `?organizationId=${(user as any).organizationId}` : "";
+      const res = await api(`/transactions${qs}`, { token });
       const txs = res.data?.transactions || res.data || [];
       setTransactions(Array.isArray(txs) ? txs : []);
     } catch {
@@ -51,7 +52,11 @@ export default function TransactionsPage() {
       await api(isEditing ? `/transactions/${editingId}` : "/transactions", {
         method: isEditing ? "PUT" : "POST",
         token,
-        body: { ...form, amount: parseFloat(form.amount) },
+        body: { 
+          ...form, 
+          amount: parseFloat(form.amount),
+          ...((user as any)?.organizationId && { organizationId: (user as any).organizationId })
+        },
       });
       setForm({
         amount: "",
