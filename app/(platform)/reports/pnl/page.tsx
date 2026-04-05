@@ -106,7 +106,7 @@ export default function PnLPage() {
           </div>
           <div className="flex items-end">
             <p className="text-2xl font-bold text-emerald-400">
-              ${(data?.totalIncome || 0).toLocaleString()}
+              ₹{(data?.totalIncome || 0).toLocaleString()}
             </p>
             {renderGrowth(data?.growth?.revenueGrowth, false)}
           </div>
@@ -120,7 +120,7 @@ export default function PnLPage() {
           </div>
           <div className="flex items-end">
             <p className="text-2xl font-bold text-red-400">
-              ${(data?.totalExpense || 0).toLocaleString()}
+              ₹{(data?.totalExpense || 0).toLocaleString()}
             </p>
             {renderGrowth(data?.growth?.expenseGrowth, true)}
           </div>
@@ -136,7 +136,7 @@ export default function PnLPage() {
             <p
               className={`text-2xl font-bold ${(data?.netProfit || 0) >= 0 ? "text-emerald-400" : "text-red-400"}`}
             >
-              ${(data?.netProfit || 0).toLocaleString()}
+              ₹{(data?.netProfit || 0).toLocaleString()}
             </p>
             {renderGrowth(data?.growth?.profitGrowth, false)}
           </div>
@@ -159,7 +159,7 @@ export default function PnLPage() {
         </div>
         <div className="bg-[#0a0a0a] border border-primary/20 rounded-2xl p-4 flex flex-col justify-center bg-gradient-to-br from-primary/5 to-transparent">
             <span className="text-xs font-medium text-foreground/50 mb-1">Monthly Burn Rate</span>
-            <p className="text-lg font-bold text-red-400">${(data?.burnRate || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+            <p className="text-lg font-bold text-red-400">₹{(data?.burnRate || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
         </div>
         <div className="bg-[#0a0a0a] border border-primary/20 rounded-2xl p-4 flex flex-col justify-center bg-gradient-to-br from-primary/5 to-transparent">
             <span className="text-xs font-medium text-foreground/50 mb-1">Runway</span>
@@ -197,7 +197,7 @@ export default function PnLPage() {
                 <YAxis
                   stroke="rgba(255,255,255,0.3)"
                   fontSize={12}
-                  tickFormatter={(val) => `$${val / 1000}k`}
+                  tickFormatter={(val) => `₹${val / 1000}k`}
                 />
                 <Tooltip
                   contentStyle={{
@@ -274,7 +274,7 @@ export default function PnLPage() {
                     }}
                     itemStyle={{ fontSize: "12px", color: "#fff" }}
                     formatter={(value: any) =>
-                      `$${Number(value).toLocaleString()}`
+                      `₹${Number(value).toLocaleString()}`
                     }
                   />
                 </PieChart>
@@ -307,7 +307,7 @@ export default function PnLPage() {
                       type="number"
                       stroke="rgba(255,255,255,0.3)"
                       fontSize={12}
-                      tickFormatter={(val) => `$${val / 1000}k`}
+                      tickFormatter={(val) => `₹${val / 1000}k`}
                     />
                     <YAxis
                       dataKey="category"
@@ -323,7 +323,7 @@ export default function PnLPage() {
                         borderRadius: "12px",
                       }}
                       itemStyle={{ fontSize: "12px", color: "#fff" }}
-                      formatter={(value: any) => `$${Number(value).toLocaleString()}`}
+                      formatter={(value: any) => `₹${Number(value).toLocaleString()}`}
                     />
                     <Legend iconType="circle" wrapperStyle={{ fontSize: "12px" }} />
                     <Bar

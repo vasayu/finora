@@ -25,6 +25,7 @@ export default function RegisterPage() {
     password: "",
     firstName: "",
     lastName: "",
+    phoneNumber: "",
     role: "EMPLOYEE",
   });
 
@@ -100,6 +101,20 @@ export default function RegisterPage() {
                   placeholder="Doe"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-foreground/60 mb-1.5 block">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                required
+                value={form.phoneNumber}
+                onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
+                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+                placeholder="+1 234 567 8900"
+              />
             </div>
 
             {/* Role Selector */}

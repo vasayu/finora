@@ -8,6 +8,7 @@ interface RegisterInput {
     password: string;
     firstName: string;
     lastName: string;
+    phoneNumber: string;
     role?: Role;
 }
 
@@ -33,6 +34,7 @@ export class AuthService {
             email: data.email,
             firstName: data.firstName,
             lastName: data.lastName,
+            phoneNumber: data.phoneNumber,
             password: hashedPassword,
             role,
         });
