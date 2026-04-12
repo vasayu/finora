@@ -139,6 +139,7 @@ CREATE TABLE "Transaction" (
     "description" TEXT,
     "userId" TEXT NOT NULL,
     "organizationId" TEXT,
+    "settlementId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -240,10 +241,18 @@ CREATE TABLE "Settlement" (
     "approved" BOOLEAN NOT NULL DEFAULT false,
     "userId" TEXT,
     "organizationId" TEXT,
+    "budgetId" TEXT,
+    "transactionId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Settlement_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "_BudgetMembers" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL
 );
 
 -- CreateIndex
@@ -278,6 +287,18 @@ CREATE UNIQUE INDEX "Watchlist_userId_symbol_key" ON "Watchlist"("userId", "symb
 
 -- CreateIndex
 CREATE UNIQUE INDEX "OrgWatchlist_organizationId_symbol_key" ON "OrgWatchlist"("organizationId", "symbol");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Transaction_settlementId_key" ON "Transaction"("settlementId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Settlement_transactionId_key" ON "Settlement"("transactionId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_BudgetMembers_AB_unique" ON "_BudgetMembers"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_BudgetMembers_B_index" ON "_BudgetMembers"("B");
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -329,3 +350,12 @@ ALTER TABLE "Settlement" ADD CONSTRAINT "Settlement_userId_fkey" FOREIGN KEY ("u
 
 -- AddForeignKey
 ALTER TABLE "Settlement" ADD CONSTRAINT "Settlement_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Settlement" ADD CONSTRAINT "Settlement_userId_budgetId_fkey" FOREIGN KEY ("budgetId") REFERENCES "Budget"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_BudgetMembers" ADD CONSTRAINT "_BudgetMembers_A_fkey" FOREIGN KEY ("A") REFERENCES "Budget"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_BudgetMembers" ADD CONSTRAINT "_BudgetMembers_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -1,0 +1,71 @@
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "finora", schema "public" at "localhost:5432"
+
+Error: P1001: Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+npm notice
+npm notice New major version of npm available! 10.8.2 -> 11.12.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.12.1
+npm notice To update run: npm install -g npm@11.12.1
+npm notice
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "finora", schema "public" at "localhost:5432"
+
+Error: P1001: Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "finora", schema "public" at "localhost:5432"
+
+Error: P1001: Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "finora", schema "public" at "localhost:5432"
+
+Error: P1001: Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "finora", schema "public" at "localhost:5432"
+
+Error: P1001: Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "finora", schema "public" at "localhost:5432"
+
+Error: P1001: Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "finora", schema "public" at "localhost:5432"
+
+Error: P1001: Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "finora", schema "public" at "localhost:5432"
+
+Error: P1001: Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "finora", schema "public" at "localhost:5432"
+
+Error: P1001: Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "finora", schema "public" at "localhost:5432"
+
+Error: P1001: Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "finora", schema "public" at "localhost:5432"
+
+Error: P1001: Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
