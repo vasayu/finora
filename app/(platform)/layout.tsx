@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/Components/AuthProvider";
 import Sidebar from "@/Components/Sidebar";
+import FloatingChatBot from "@/Components/FloatingChatBot";
 
 export default function PlatformLayout({
   children,
@@ -42,6 +43,7 @@ export default function PlatformLayout({
       <main className={`min-h-screen transition-all duration-300 ${isCollapsed ? "ml-20" : "ml-64"}`}>
         <div className="p-8">{children}</div>
       </main>
+      <FloatingChatBot />
     </div>
   );
 }
